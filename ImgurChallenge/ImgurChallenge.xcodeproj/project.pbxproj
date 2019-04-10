@@ -17,6 +17,7 @@
 		BE3C8044225C1CCB0035C5BC /* ImgurChallengeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3C8043225C1CCB0035C5BC /* ImgurChallengeTests.swift */; };
 		BE3C804F225C1CCB0035C5BC /* ImgurChallengeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3C804E225C1CCB0035C5BC /* ImgurChallengeUITests.swift */; };
 		BE3C805D225C295F0035C5BC /* ResultsTableController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3C805C225C295F0035C5BC /* ResultsTableController.swift */; };
+		BE3C8064225D8CCC0035C5BC /* ImgurAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3C8063225D8CCC0035C5BC /* ImgurAPI.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		BE3C804E225C1CCB0035C5BC /* ImgurChallengeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImgurChallengeUITests.swift; sourceTree = "<group>"; };
 		BE3C8050225C1CCB0035C5BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BE3C805C225C295F0035C5BC /* ResultsTableController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResultsTableController.swift; sourceTree = "<group>"; };
+		BE3C8063225D8CCC0035C5BC /* ImgurAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImgurAPI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,15 +105,13 @@
 		BE3C8028225C1CCA0035C5BC /* ImgurChallenge */ = {
 			isa = PBXGroup;
 			children = (
-				BE3C8029225C1CCA0035C5BC /* AppDelegate.swift */,
-				BE3C802E225C1CCA0035C5BC /* MasterViewController.swift */,
-				BE3C805C225C295F0035C5BC /* ResultsTableController.swift */,
-				BE3C8030225C1CCA0035C5BC /* DetailViewController.swift */,
-				BE3C8032225C1CCA0035C5BC /* Main.storyboard */,
-				BE3C8035225C1CCB0035C5BC /* Assets.xcassets */,
-				BE3C8037225C1CCB0035C5BC /* LaunchScreen.storyboard */,
 				BE3C803A225C1CCB0035C5BC /* Info.plist */,
-				BE3C802B225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld */,
+				BE3C8060225D8BFD0035C5BC /* UI */,
+				BE3C805E225D8BC30035C5BC /* NetworkLayer */,
+				BE3C805F225D8BE30035C5BC /* CoreData */,
+				BE3C8062225D8C360035C5BC /* Resources */,
+				BE3C8061225D8C0A0035C5BC /* AppCore */,
+				BE3C805C225C295F0035C5BC /* ResultsTableController.swift */,
 			);
 			path = ImgurChallenge;
 			sourceTree = "<group>";
@@ -132,6 +132,49 @@
 				BE3C8050225C1CCB0035C5BC /* Info.plist */,
 			);
 			path = ImgurChallengeUITests;
+			sourceTree = "<group>";
+		};
+		BE3C805E225D8BC30035C5BC /* NetworkLayer */ = {
+			isa = PBXGroup;
+			children = (
+				BE3C8063225D8CCC0035C5BC /* ImgurAPI.swift */,
+			);
+			path = NetworkLayer;
+			sourceTree = "<group>";
+		};
+		BE3C805F225D8BE30035C5BC /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
+				BE3C802B225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld */,
+			);
+			path = CoreData;
+			sourceTree = "<group>";
+		};
+		BE3C8060225D8BFD0035C5BC /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				BE3C802E225C1CCA0035C5BC /* MasterViewController.swift */,
+				BE3C8030225C1CCA0035C5BC /* DetailViewController.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		BE3C8061225D8C0A0035C5BC /* AppCore */ = {
+			isa = PBXGroup;
+			children = (
+				BE3C8029225C1CCA0035C5BC /* AppDelegate.swift */,
+				BE3C8032225C1CCA0035C5BC /* Main.storyboard */,
+			);
+			path = AppCore;
+			sourceTree = "<group>";
+		};
+		BE3C8062225D8C360035C5BC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				BE3C8035225C1CCB0035C5BC /* Assets.xcassets */,
+				BE3C8037225C1CCB0035C5BC /* LaunchScreen.storyboard */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -270,6 +313,7 @@
 				BE3C802A225C1CCA0035C5BC /* AppDelegate.swift in Sources */,
 				BE3C802F225C1CCA0035C5BC /* MasterViewController.swift in Sources */,
 				BE3C8031225C1CCA0035C5BC /* DetailViewController.swift in Sources */,
+				BE3C8064225D8CCC0035C5BC /* ImgurAPI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

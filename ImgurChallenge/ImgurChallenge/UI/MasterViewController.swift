@@ -248,8 +248,15 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
 extension MasterViewController: UISearchBarDelegate {
     
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+
+        
+        
+    }
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
+        ImgurAPI().fetchPhotos(searchTerm: searchBar.text ?? "", pageNumber: 0)
     }
     
 }
