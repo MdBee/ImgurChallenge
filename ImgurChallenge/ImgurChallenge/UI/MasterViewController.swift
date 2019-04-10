@@ -256,7 +256,7 @@ extension MasterViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
-        ImgurAPI().fetchPhotos(searchTerm: searchBar.text ?? "", pageNumber: 1)
+        ImgurAPI().fetchPhotos(searchTerm: searchBar.text ?? "", pageNumber: 0)
     }
     
 }

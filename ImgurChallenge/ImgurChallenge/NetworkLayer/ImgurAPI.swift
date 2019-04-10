@@ -35,11 +35,12 @@ class ImgurAPI: NSObject {
         URLSession.shared.dataTask(with: request as URLRequest) { (data, response, error) in
             do {
             if error == nil {
-//                let jsonDictionary = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
                 if let res = response as? HTTPURLResponse {
                     print(res.debugDescription)
                     
-                let jsonDictionary = try JSONDecoder().decode(ImgurGalleryDataModel.self, from: data ?? Data())
+                    let jsonDictionary = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
+                    
+                //let jsonDictionary = try JSONDecoder().decode(ImgurGalleryDataModel.self, from: data ?? Data())
                 print(jsonDictionary)
                 } else {
                    print(Error.badResponse(2))
