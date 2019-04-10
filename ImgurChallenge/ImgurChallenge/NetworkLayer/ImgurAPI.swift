@@ -18,7 +18,7 @@ enum Error {
     case badResponse(Int)
 }
 
-private let clientID = "126701cd8332f32"
+private let clientID = "Client-ID 126701cd8332f32"
 
 class ImgurAPI: NSObject {
     
@@ -30,16 +30,27 @@ class ImgurAPI: NSObject {
         
         request.setValue(clientID, forHTTPHeaderField: "Authorization")
         request.httpMethod = "GET"
-        let session = URLSession.shared
+        //request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let dataFetch = session.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
-            if let res = response as? HTTPURLResponse {
-                
+        URLSession.shared.dataTask(with: request as URLRequest) { (data, response, error) in
+            do {
+            if error == nil {
+//                let jsonDictionary = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
+                if let res = response as? HTTPURLResponse {
+                    print(res.debugDescription)
+                    
+                let jsonDictionary = try JSONDecoder().decode(ImgurGalleryDataModel.self, from: data ?? Data())
+                print(jsonDictionary)
+                } else {
+                   print(Error.badResponse(2))
+                }
             } else {
                 print("Error = " + String(describing: error))
             }
-        }
-        dataFetch.resume()
+            } catch {
+                print(Error.badResponse(1))
+            }
+        }.resume()
     }
 }
 
