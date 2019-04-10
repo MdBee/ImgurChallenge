@@ -20,7 +20,7 @@ enum Error {
 
 private let clientID = "Client-ID 126701cd8332f32"
 
-class ImgurAPI: NSObject {
+class ImgurAPI: NSObject, URLSessionDelegate {
     
     func fetchPhotos(searchTerm: String = "", pageNumber: Int = 0) {
         guard let url = URL(string: Path.Search + "\(pageNumber)" + "?q=" + searchTerm)
@@ -31,17 +31,21 @@ class ImgurAPI: NSObject {
         request.setValue(clientID, forHTTPHeaderField: "Authorization")
         request.httpMethod = "GET"
         //request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
+    
         URLSession.shared.dataTask(with: request as URLRequest) { (data, response, error) in
             do {
             if error == nil {
                 if let res = response as? HTTPURLResponse {
                     print(res.debugDescription)
                     
-                    let jsonDictionary = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
+                    //this works
+                    //let json = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
+                    //print(json)
                     
-                //let jsonDictionary = try JSONDecoder().decode(ImgurGalleryDataModel.self, from: data ?? Data())
-                print(jsonDictionary)
+                    let jsonDecoded = try JSONDecoder().decode(ImgurGalleryDataModel.self, from: data as! Data)
+                    print(jsonDecoded)
+                
                 } else {
                    print(Error.badResponse(2))
                 }
@@ -50,8 +54,21 @@ class ImgurAPI: NSObject {
             }
             } catch {
                 print(Error.badResponse(1))
+                print(error.localizedDescription)
             }
         }.resume()
+    }
+    
+    //MARK: URLSessionTaskDelegate
+    func urlSession(_ session: URLSession,
+                    task: URLSessionTask,
+                    didCompleteWithError error: Error?){
+        //downloadTask = nil
+        if (error != nil) {
+            print(error.debugDescription)
+        }else{
+            print("The task finished transferring data successfully")
+        }
     }
 }
 
