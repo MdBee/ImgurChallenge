@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BE189476225DA33400107E4D /* ImgurGalleryDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE189475225DA33400107E4D /* ImgurGalleryDataModel.swift */; };
+		BE189478225ED34C00107E4D /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE189477225ED34C00107E4D /* CoreDataStack.swift */; };
 		BE3C802A225C1CCA0035C5BC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3C8029225C1CCA0035C5BC /* AppDelegate.swift */; };
 		BE3C802D225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BE3C802B225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld */; };
 		BE3C802F225C1CCA0035C5BC /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3C802E225C1CCA0035C5BC /* MasterViewController.swift */; };
@@ -39,7 +39,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		BE189475225DA33400107E4D /* ImgurGalleryDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImgurGalleryDataModel.swift; sourceTree = "<group>"; };
+		BE189477225ED34C00107E4D /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		BE3C8026225C1CCA0035C5BC /* ImgurChallenge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImgurChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE3C8029225C1CCA0035C5BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BE3C802C225C1CCA0035C5BC /* ImgurChallenge.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ImgurChallenge.xcdatamodel; sourceTree = "<group>"; };
@@ -140,7 +140,6 @@
 			isa = PBXGroup;
 			children = (
 				BE3C8063225D8CCC0035C5BC /* ImgurAPI.swift */,
-				BE189475225DA33400107E4D /* ImgurGalleryDataModel.swift */,
 			);
 			path = NetworkLayer;
 			sourceTree = "<group>";
@@ -149,6 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				BE3C802B225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld */,
+				BE189477225ED34C00107E4D /* CoreDataStack.swift */,
 			);
 			path = CoreData;
 			sourceTree = "<group>";
@@ -313,11 +313,11 @@
 			files = (
 				BE3C802D225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld in Sources */,
 				BE3C805D225C295F0035C5BC /* ResultsTableController.swift in Sources */,
-				BE189476225DA33400107E4D /* ImgurGalleryDataModel.swift in Sources */,
 				BE3C802A225C1CCA0035C5BC /* AppDelegate.swift in Sources */,
 				BE3C802F225C1CCA0035C5BC /* MasterViewController.swift in Sources */,
 				BE3C8031225C1CCA0035C5BC /* DetailViewController.swift in Sources */,
 				BE3C8064225D8CCC0035C5BC /* ImgurAPI.swift in Sources */,
+				BE189478225ED34C00107E4D /* CoreDataStack.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
