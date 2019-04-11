@@ -22,6 +22,20 @@ private let clientID = "Client-ID 126701cd8332f32"
 
 class ImgurAPI: NSObject, URLSessionDelegate {
     
+    func persistData(_ jsonArray: [[String: Any]], searchTerm: String) {
+        
+        print(jsonArray.count)
+        
+        let imageClusters = jsonArray.map({ $0["images"] })
+        
+        print(imageClusters.count)
+        
+        //only persist if searchTerm is still the current one
+        
+        
+        
+    }
+    
     func fetchPhotos(searchTerm: String = "", pageNumber: Int = 0) {
         guard let url = URL(string: Path.Search + "\(pageNumber)" + "?q=" + searchTerm)
             else { print(Error.badURL)
@@ -37,14 +51,24 @@ class ImgurAPI: NSObject, URLSessionDelegate {
             do {
             if error == nil {
                 if let res = response as? HTTPURLResponse {
-                    print(res.debugDescription)
+                    //print(res.debugDescription)
                     
                     //this works
-                    //let json = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
-                    //print(json)
+                    let responseObject = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
+                    //print(responseObject)
                     
-                    let jsonDecoded = try JSONDecoder().decode(ImgurGalleryDataModel.self, from: data as! Data)
-                    print(jsonDecoded)
+                    if let jsonArray = (responseObject as! [String:Any])["data"] as? [[String: Any]] {
+                        print(jsonArray.count)
+                    
+//                        let compact = jsonArray.compactMap({ $0 })
+//                        print(compact.count)
+//                        print(compact)
+                        
+                        DispatchQueue.main.async {
+                            self.persistData(jsonArray, searchTerm: searchTerm)
+                        }
+                        
+                    }
                 
                 } else {
                    print(Error.badResponse(2))
