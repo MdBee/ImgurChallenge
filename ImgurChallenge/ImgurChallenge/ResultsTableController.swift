@@ -13,6 +13,7 @@ class ResultsTableController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         //return filteredProducts.count
+        self.view.isHidden = true
         return 10
     }
     

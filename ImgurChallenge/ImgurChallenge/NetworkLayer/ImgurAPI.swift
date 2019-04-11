@@ -52,6 +52,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         }
         
         //self.saveTheManagedObjects()
+        CoreDataStack.shared.saveContext()
     }
     
     
@@ -65,7 +66,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
         newItem.title = rawItem["title"] as? String ?? ""
         newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
-        newItem.thumbnailLink = rawItem["link"] as? String ?? "" + "t." + self.extensionForMimeType(rawItem["type"] as? String)
+        newItem.thumbnailLink = (rawItem["link"] as? String ?? "") + "t." + self.extensionForMimeType(rawItem["type"] as? String)
         newItem.thumbnailData = nil
         newItem.imageLink = rawItem["link"] as? String ?? "" + self.extensionForMimeType(rawItem["type"] as? String)
         newItem.imageData = nil
@@ -73,7 +74,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         //return newItem
        // self.saveTheManagedObjects()
        // context.insert(newItem)
-        CoreDataStack.shared.saveContext()
+       // CoreDataStack.shared.saveContext()
     }
     
 //    func saveTheManagedObjects() {
