@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BE1820EB2260023B008FBAE7 /* ThumbnailTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1820EA2260023B008FBAE7 /* ThumbnailTableViewCell.swift */; };
 		BE189478225ED34C00107E4D /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE189477225ED34C00107E4D /* CoreDataStack.swift */; };
 		BE3C802A225C1CCA0035C5BC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3C8029225C1CCA0035C5BC /* AppDelegate.swift */; };
 		BE3C802D225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BE3C802B225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld */; };
@@ -38,6 +39,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BE1820EA2260023B008FBAE7 /* ThumbnailTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailTableViewCell.swift; sourceTree = "<group>"; };
 		BE189477225ED34C00107E4D /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		BE3C8026225C1CCA0035C5BC /* ImgurChallenge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImgurChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE3C8029225C1CCA0035C5BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -155,6 +157,8 @@
 			children = (
 				BE3C802E225C1CCA0035C5BC /* MasterViewController.swift */,
 				BE3C8030225C1CCA0035C5BC /* DetailViewController.swift */,
+				BE3C8032225C1CCA0035C5BC /* Main.storyboard */,
+				BE1820EA2260023B008FBAE7 /* ThumbnailTableViewCell.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -163,7 +167,6 @@
 			isa = PBXGroup;
 			children = (
 				BE3C8029225C1CCA0035C5BC /* AppDelegate.swift */,
-				BE3C8032225C1CCA0035C5BC /* Main.storyboard */,
 			);
 			path = AppCore;
 			sourceTree = "<group>";
@@ -309,6 +312,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BE3C802D225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld in Sources */,
+				BE1820EB2260023B008FBAE7 /* ThumbnailTableViewCell.swift in Sources */,
 				BE3C802A225C1CCA0035C5BC /* AppDelegate.swift in Sources */,
 				BE3C802F225C1CCA0035C5BC /* MasterViewController.swift in Sources */,
 				BE3C8031225C1CCA0035C5BC /* DetailViewController.swift in Sources */,

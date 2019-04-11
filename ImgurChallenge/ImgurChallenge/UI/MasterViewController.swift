@@ -134,11 +134,11 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         return sectionInfo.numberOfObjects
     }
 
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> ThumbnailTableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let item = fetchedResultsController.object(at: indexPath)
-        configureCell(cell, withItem: item)
-        return cell
+        configureCell(cell as! ThumbnailTableViewCell, withItem: item)
+        return cell as! ThumbnailTableViewCell
     }
 
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -162,8 +162,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
     }
 
-    func configureCell(_ cell: UITableViewCell, withItem item: Item) {
-        cell.textLabel!.text = item.title
+    func configureCell(_ cell: ThumbnailTableViewCell, withItem item: Item) {
+        //cell.textLabel!.text = item.title
+        cell.titleLabel.text = item.title
     }
 
     // MARK: - Fetched results controller
@@ -229,9 +230,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             case .delete:
                 tableView.deleteRows(at: [indexPath!], with: .fade)
             case .update:
-                configureCell(tableView.cellForRow(at: indexPath!)!, withItem: anObject as! Item)
+                configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
             case .move:
-                configureCell(tableView.cellForRow(at: indexPath!)!, withItem: anObject as! Item)
+                configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
                 tableView.moveRow(at: indexPath!, to: newIndexPath!)
         }
     }
