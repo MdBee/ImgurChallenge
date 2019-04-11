@@ -23,8 +23,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         splitViewController.delegate = self
 
         let masterNavigationController = splitViewController.viewControllers[0] as! UINavigationController
-        let controller = masterNavigationController.topViewController as! MasterViewController
-        controller.managedObjectContext = self.persistentContainer.viewContext
+        //let controller = masterNavigationController.topViewController as! MasterViewController
+        //controller.managedObjectContext = self.persistentContainer.viewContext
+        //controller.managedObjectContext = CoreDataStack.shared.container?.viewContext
+        CoreDataStack.shared.loadStore {
+            let controller = masterNavigationController.topViewController as! MasterViewController
+            controller.managedObjectContext = CoreDataStack.shared.container?.viewContext
+        }
         return true
     }
 

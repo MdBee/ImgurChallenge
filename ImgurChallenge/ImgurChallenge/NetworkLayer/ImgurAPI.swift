@@ -23,7 +23,8 @@ private let clientID = "Client-ID 126701cd8332f32"
 
 class ImgurAPI: NSObject, URLSessionDelegate {
     
-    let context = CoreDataStack().persistentContainer.viewContext
+    //let context = CoreDataStack.shared.persistentContainer.viewContext
+    var container : NSPersistentContainer? { return CoreDataStack.shared.container }
     
     //@objc
     func persistData(_ jsonArray: [[String: Any]], searchTerm: String) {
@@ -31,6 +32,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         print(jsonArray.count)
         
         let imageClusters = jsonArray.map({ $0["images"] })
+        //let imageClusters = jsonArray.compactMap({ $0["images"] })
         
         print(imageClusters.count)
         
@@ -38,10 +40,15 @@ class ImgurAPI: NSObject, URLSessionDelegate {
 
         //let items = imageClusters.map({ self.configureManagedObject($0) })
 
-        for imageItem in imageClusters {
-            guard let rawItem = imageItem as? [String : Any]
+        for cluster in imageClusters {
+//            guard let rawItem = imageItem as? [String : Any]
+//                else { continue }
+           // _ = self.configureManagedObject(rawItem)
+            guard let validCluster = cluster as? [[String : Any]]
                 else { continue }
-            self.configureManagedObject(rawItem)
+            for imageItem in validCluster {
+                self.configureManagedObject(imageItem)
+        }
         }
         
         //self.saveTheManagedObjects()
@@ -51,7 +58,8 @@ class ImgurAPI: NSObject, URLSessionDelegate {
     //move to ImgurGalleryDataModel?
     
     func configureManagedObject(_ rawItem: [String: Any]) {
-        
+        guard let context = self.container?.viewContext
+            else { return }
         let newItem = Item(context: context)
 
         newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
@@ -62,22 +70,24 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         newItem.imageLink = rawItem["link"] as? String ?? "" + self.extensionForMimeType(rawItem["type"] as? String)
         newItem.imageData = nil
         
-       // return newItem
-        self.saveTheManagedObjects()
+        //return newItem
+       // self.saveTheManagedObjects()
+       // context.insert(newItem)
+        CoreDataStack.shared.saveContext()
     }
     
-    func saveTheManagedObjects() {
-        // Save the context.
-        do {
-            try context.save()
-        } catch {
-            // Replace this implementation with code to handle the error appropriately.
-            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            let nserror = error as NSError
-            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-        }
-        
-    }
+//    func saveTheManagedObjects() {
+//        // Save the context.
+//        do {
+//            try context.save()
+//        } catch {
+//            // Replace this implementation with code to handle the error appropriately.
+//            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+//            let nserror = error as NSError
+//            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+//        }
+//
+//    }
     
     
     func extensionForMimeType(_ mimeType: String?) -> String {

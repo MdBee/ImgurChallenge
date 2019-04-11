@@ -32,6 +32,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     private var restoredState = SearchControllerRestorableState()
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
+    var container : NSPersistentContainer? { return CoreDataStack.shared.container }
 
     // MARK: - View Life Cycle
     
@@ -40,8 +41,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
         navigationItem.leftBarButtonItem = editButtonItem
 
-        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
-        navigationItem.rightBarButtonItem = addButton
+//        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
+//        navigationItem.rightBarButtonItem = addButton
         if let split = splitViewController {
             let controllers = split.viewControllers
             detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
@@ -88,8 +89,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
     }
 
-    @objc
-    func insertNewObject(_ sender: Any) {
+//    @objc
+//    func insertNewObject(_ sender: Any) {
 //        let context = self.fetchedResultsController.managedObjectContext
 //        let newEvent = Event(context: context)
 //
@@ -105,7 +106,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 //            let nserror = error as NSError
 //            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
 //        }
-    }
+ //   }
 
     // MARK: - Segues
 
@@ -181,7 +182,11 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        let context = CoreDataStack().persistentContainer.viewContext
+        //let context = CoreDataStack.shared.persistentContainer.viewContext
+        guard let context = container?.viewContext
+            else { print("FetchedResultsController error 1")
+                return NSFetchedResultsController() }
+        
         // Edit the section name key path and cache name if appropriate.
         // nil for section name key path means "no sections".
         let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: "Master")
