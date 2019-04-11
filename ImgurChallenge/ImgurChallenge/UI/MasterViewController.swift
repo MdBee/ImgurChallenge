@@ -28,7 +28,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     // MARK: - Properties
 
     private var searchController: UISearchController!
-    private var resultsTableController: ResultsTableController!
+    //private var resultsTableController: ResultsTableController!
     private var restoredState = SearchControllerRestorableState()
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
@@ -48,11 +48,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
         }
         
-        resultsTableController = ResultsTableController()
+//        resultsTableController = ResultsTableController()
+//
+//        resultsTableController.tableView.delegate = self
         
-        resultsTableController.tableView.delegate = self
-        
-        searchController = UISearchController(searchResultsController: resultsTableController)
+//        searchController = UISearchController(searchResultsController: resultsTableController)
+        searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
         searchController.searchBar.autocapitalizationType = .none
         

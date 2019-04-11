@@ -64,7 +64,8 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         let newItem = Item(context: context)
 
         newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
-        newItem.title = rawItem["title"] as? String ?? ""
+//        newItem.title = rawItem["title"] as? String ?? ""
+        newItem.title = rawItem["link"] as? String ?? ""
         newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
         newItem.thumbnailLink = (rawItem["link"] as? String ?? "") + "t." + self.extensionForMimeType(rawItem["type"] as? String)
         newItem.thumbnailData = nil
