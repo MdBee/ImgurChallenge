@@ -10,6 +10,8 @@ import UIKit
 
 class DetailViewController: UIViewController {
 
+    @IBOutlet weak var imageView: UIImageView!
+    
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
 
@@ -21,6 +23,30 @@ class DetailViewController: UIViewController {
 //            }
             self.title = detail.title
             //self.activityIndicator.isHidden = false
+            
+            
+            if detail.imageData != nil {
+                self.imageView?.image = UIImage(data: detail.imageData!)
+            } else {
+                
+                guard let link = detail.imageLink
+                    else { print("no image link")
+                        return
+                }
+                if let imgURL = URL.init(string: link) {
+                    do {
+                        let imageData = try Data(contentsOf: imgURL as URL);
+                        let image = UIImage(data: imageData);
+                        self.imageView?.image = image
+                        
+                        //update Item with imageData
+                        detail.imageData = imageData
+                    } catch {
+                        self.imageView?.image = UIImage(named: "JohnWayne")
+                        print("Unable to load data: \(error)")
+                    }
+                }
+            }
         }
     }
 

@@ -178,12 +178,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             do {
                 let imageData = try Data(contentsOf: imgURL as URL);
                 let image = UIImage(data:imageData);
-                print("here you will find your image:- \(String(describing: image)) ");
                 cell.imageView?.image = image
                 
                 //update Item with imageData
                 item.thumbnailData = imageData
             } catch {
+                cell.imageView?.image = UIImage(named: "JohnWayne")
                 print("Unable to load data: \(error)")
             }
         }

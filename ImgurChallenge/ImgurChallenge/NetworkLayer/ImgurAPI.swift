@@ -127,7 +127,8 @@ class ImgurAPI: NSObject, URLSessionDelegate {
     
     
     func fetchFor(searchTerm: String = "", pageNumber: Int = 0) {
-        guard let url = URL(string: Path.Search + "\(pageNumber)" + "?q=" + searchTerm)
+        guard let escapedSearchTerm = searchTerm.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+            let url = URL(string: Path.Search + "\(pageNumber)" + "?q=" + escapedSearchTerm)
             else { print(Error.badURL)
                     return }
         let request = NSMutableURLRequest(url: url)
