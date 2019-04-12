@@ -82,10 +82,13 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         newItem.title = rawItem["title"] as? String ?? (rawItem["galleryTitle"] as? String ?? "no title")
         //newItem.title = title
         newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
-        newItem.thumbnailLink = link + "t." + self.extensionForMimeType(rawItem["type"] as? String)
-        newItem.thumbnailData = nil
-        newItem.imageLink = link + self.extensionForMimeType(rawItem["type"] as? String)
+        newItem.imageLink = link
         newItem.imageData = nil
+        
+        let suffix = self.extensionForMimeType(rawItem["type"] as? String)
+        newItem.thumbnailLink = link.replacingOccurrences(of: suffix, with: "t" + suffix)
+        newItem.thumbnailData = nil
+
         
         //return newItem
        // self.saveTheManagedObjects()
