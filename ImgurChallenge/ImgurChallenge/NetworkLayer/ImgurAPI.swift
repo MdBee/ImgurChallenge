@@ -31,6 +31,9 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         
         print(jsonArray.count)
         
+        let galleryTitles: [String] = jsonArray.map({ $0["title"] as? String ?? "no gallery title" })
+        
+        
         let imageClusters = jsonArray.map({ $0["images"] })
         //let imageClusters = jsonArray.compactMap({ $0["images"] })
         
@@ -38,16 +41,23 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         
         //guard...only persist if searchTerm is still the current one
 
-        //let items = imageClusters.map({ self.configureManagedObject($0) })
+        guard galleryTitles.count == imageClusters.count
+            else { print("title mismatch error?")
+                return
+                }
 
-        for cluster in imageClusters {
-//            guard let rawItem = imageItem as? [String : Any]
-//                else { continue }
-           // _ = self.configureManagedObject(rawItem)
+
+        //for cluster in imageClusters {
+        for (index, cluster) in imageClusters.enumerated() {
+            
+            let galleryTitle = galleryTitles[index]
+            
             guard let validCluster = cluster as? [[String : Any]]
                 else { continue }
             for imageItem in validCluster {
-                self.configureManagedObject(imageItem)
+                var mutableItem = imageItem
+                mutableItem["galleryTitle"] = galleryTitle
+                self.configureManagedObject(mutableItem)
         }
         }
         
@@ -59,17 +69,22 @@ class ImgurAPI: NSObject, URLSessionDelegate {
     //move to ImgurGalleryDataModel?
     
     func configureManagedObject(_ rawItem: [String: Any]) {
-        guard let context = self.container?.viewContext
+        guard let context = self.container?.viewContext,
+            //let title = rawItem["title"] as? String,
+            let link = rawItem["link"] as? String
             else { return }
+        guard link != ""
+            else {return }
+        
         let newItem = Item(context: context)
 
         newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
-//        newItem.title = rawItem["title"] as? String ?? ""
-        newItem.title = rawItem["link"] as? String ?? ""
+        newItem.title = rawItem["title"] as? String ?? (rawItem["galleryTitle"] as? String ?? "no title")
+        //newItem.title = title
         newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
-        newItem.thumbnailLink = (rawItem["link"] as? String ?? "") + "t." + self.extensionForMimeType(rawItem["type"] as? String)
+        newItem.thumbnailLink = link + "t." + self.extensionForMimeType(rawItem["type"] as? String)
         newItem.thumbnailData = nil
-        newItem.imageLink = rawItem["link"] as? String ?? "" + self.extensionForMimeType(rawItem["type"] as? String)
+        newItem.imageLink = link + self.extensionForMimeType(rawItem["type"] as? String)
         newItem.imageData = nil
         
         //return newItem
@@ -95,11 +110,11 @@ class ImgurAPI: NSObject, URLSessionDelegate {
     func extensionForMimeType(_ mimeType: String?) -> String {
         switch mimeType {
         case "image/gif":
-            return "gif"
+            return ".gif"
         case "image/jpeg":
-            return "jpg"
+            return ".jpg"
         case "image/png":
-            return "png"
+            return ".png"
         default:
             return ""
         }
@@ -108,7 +123,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
     
     
     
-    func fetchPhotos(searchTerm: String = "", pageNumber: Int = 0) {
+    func fetchFor(searchTerm: String = "", pageNumber: Int = 0) {
         guard let url = URL(string: Path.Search + "\(pageNumber)" + "?q=" + searchTerm)
             else { print(Error.badURL)
                     return }
@@ -138,9 +153,9 @@ class ImgurAPI: NSObject, URLSessionDelegate {
 //                        print(compact.count)
 //                        print(compact)
                         
-                        DispatchQueue.main.async {
+                        //DispatchQueue.main.async {
                             self.persistData(jsonArray, searchTerm: searchTerm)
-                        }
+                        //}
                         
                     }
                 

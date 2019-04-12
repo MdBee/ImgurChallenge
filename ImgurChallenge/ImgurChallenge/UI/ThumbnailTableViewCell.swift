@@ -24,7 +24,7 @@ class ThumbnailTableViewCell: UITableViewCell {
     }
     
     override func prepareForReuse() {
-        self.thumbnailImageView.image = nil
+        self.thumbnailImageView.image = UIImage(named: "JohnWayne")
         self.titleLabel.text = nil
         self.backgroundColor = UIColor.white
     }

@@ -107,7 +107,6 @@
 		BE3C8028225C1CCA0035C5BC /* ImgurChallenge */ = {
 			isa = PBXGroup;
 			children = (
-				BE3C803A225C1CCB0035C5BC /* Info.plist */,
 				BE3C8060225D8BFD0035C5BC /* UI */,
 				BE3C805E225D8BC30035C5BC /* NetworkLayer */,
 				BE3C805F225D8BE30035C5BC /* CoreData */,
@@ -167,6 +166,7 @@
 			isa = PBXGroup;
 			children = (
 				BE3C8029225C1CCA0035C5BC /* AppDelegate.swift */,
+				BE3C803A225C1CCB0035C5BC /* Info.plist */,
 			);
 			path = AppCore;
 			sourceTree = "<group>";
@@ -493,7 +493,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = ImgurChallenge/Info.plist;
+				INFOPLIST_FILE = ImgurChallenge/AppCore/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -510,7 +510,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				INFOPLIST_FILE = ImgurChallenge/Info.plist;
+				INFOPLIST_FILE = ImgurChallenge/AppCore/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

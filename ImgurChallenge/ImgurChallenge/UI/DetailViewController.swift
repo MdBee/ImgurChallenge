@@ -10,15 +10,17 @@ import UIKit
 
 class DetailViewController: UIViewController {
 
-    @IBOutlet weak var detailDescriptionLabel: UILabel!
-
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
 
     func configureView() {
         // Update the user interface for the detail item.
         if let detail = detailItem {
-            if let label = detailDescriptionLabel {
-                label.text = detail.dateTime?.description
-            }
+//            if let label = detailDescriptionLabel {
+//                label.text = detail.dateTime?.description
+//            }
+            self.title = detail.title
+            //self.activityIndicator.isHidden = false
         }
     }
 
