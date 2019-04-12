@@ -165,6 +165,29 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     func configureCell(_ cell: ThumbnailTableViewCell, withItem item: Item) {
         //cell.textLabel!.text = item.title
         cell.titleLabel.text = item.title
+        
+        if item.thumbnailData != nil {
+            cell.imageView?.image = UIImage(data: item.thumbnailData!)
+        } else {
+        
+        guard let link = item.thumbnailLink
+            else { print("no thumbnail link")
+                return
+            }
+        if let imgURL = URL.init(string: link) {
+            do {
+                let imageData = try Data(contentsOf: imgURL as URL);
+                let image = UIImage(data:imageData);
+                print("here you will find your image:- \(String(describing: image)) ");
+                cell.imageView?.image = image
+                
+                //update Item with imageData
+                item.thumbnailData = imageData
+            } catch {
+                print("Unable to load data: \(error)")
+            }
+        }
+        }
     }
 
     // MARK: - Fetched results controller
