@@ -33,7 +33,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
     var container : NSPersistentContainer? { return CoreDataStack.shared.container }
-
+    public var searchTerm: String = ""
+    private var isFilteringOutNsfw: Bool = true
+    @IBOutlet weak var nsfwButton: UIBarButtonItem!
+    
     // MARK: - View Life Cycle
     
     override func viewDidLoad() {
@@ -54,7 +57,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
 //        searchController = UISearchController(searchResultsController: resultsTableController)
         searchController = UISearchController(searchResultsController: nil)
-        searchController.searchResultsUpdater = self
+        //searchController.searchResultsUpdater = self
         searchController.searchBar.autocapitalizationType = .none
         
         if #available(iOS 11.0, *) {
@@ -200,12 +203,16 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
         
         // Set the batch size to a suitable number.
-        fetchRequest.fetchBatchSize = 20
+        fetchRequest.fetchBatchSize = 100
         
         // Edit the sort key as appropriate.
-        let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: true)
-
+        let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        if isFilteringOutNsfw {
+            let predicate = NSPredicate(format: "nsfw = false")
+            fetchRequest.predicate = predicate
+        }
         
         //let context = CoreDataStack.shared.persistentContainer.viewContext
         guard let context = container?.viewContext
@@ -228,7 +235,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
         
         return _fetchedResultsController!
-    }    
+    }
+    
     var _fetchedResultsController: NSFetchedResultsController<Item>? = nil
 
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
@@ -272,7 +280,14 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
          tableView.reloadData()
      }
 
-
+    
+    // MARK: - Button Action
+    
+    @IBAction func nsfwButtonTap(_ sender: UIBarButtonItem) {
+        self.isFilteringOutNsfw = !self.isFilteringOutNsfw
+        self.nsfwButton.title = self.isFilteringOutNsfw ? "nsfw is filtered out" : "NSFW is allowed"
+        self.nsfwButton.tintColor = self.isFilteringOutNsfw ? UIColor.orange : UIColor.red
+    }
 }
 
 // MARK: - UISearchBarDelegate
@@ -280,14 +295,17 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 extension MasterViewController: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-
-        
+        self.searchTerm = searchText
+        //DEBOUNCE
         
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
-        ImgurAPI().fetchFor(searchTerm: searchBar.text ?? "", pageNumber: 0)
+        self.searchTerm = searchBar.text ?? ""
+        CoreDataStack.shared.deleteAll(entityName: "Item")
+        //DEBOUNCE
+        ImgurAPI().fetchFor(searchTerm: self.searchTerm, pageNumber: 0)
     }
     
 }
@@ -324,7 +342,7 @@ extension MasterViewController: UISearchControllerDelegate {
 
 // MARK: - UISearchResultsUpdating
 
-extension MasterViewController: UISearchResultsUpdating {
+//extension MasterViewController: UISearchResultsUpdating {
     
  //   private func findMatches(searchString: String) -> NSCompoundPredicate {
 //        /** Each searchString creates an OR predicate for: name, yearIntroduced, introPrice.
@@ -391,7 +409,7 @@ extension MasterViewController: UISearchResultsUpdating {
 //        return orMatchPredicate
 //    }
     
-    func updateSearchResults(for searchController: UISearchController) {
+//    func updateSearchResults(for searchController: UISearchController) {
         // Update the filtered array based on the search text.
 //        let searchResults = products
 //
@@ -417,9 +435,9 @@ extension MasterViewController: UISearchResultsUpdating {
 //            resultsController.filteredProducts = filteredResults
 //            resultsController.tableView.reloadData()
 //        }
-    }
+//    }
     
-}
+//}
 
 // MARK: - UIStateRestoration
 
@@ -466,5 +484,4 @@ extension MasterViewController {
         // Restore the text in the search field.
         searchController.searchBar.text = coder.decodeObject(forKey: RestorationKeys.searchBarText.rawValue) as? String
     }
-    
 }

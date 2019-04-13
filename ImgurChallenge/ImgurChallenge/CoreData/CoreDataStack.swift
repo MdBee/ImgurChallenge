@@ -84,4 +84,24 @@ class CoreDataStack: NSObject {
             }
         }
     }
+    
+    
+    func deleteAll(entityName: String) {
+        
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        deleteRequest.resultType = .resultTypeObjectIDs
+        guard let context = self.container?.viewContext
+            else { print("error in deleteAll")
+                return }
+        
+        do {
+            let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
+            let objectIDArray = result?.result as? [NSManagedObjectID]
+            let changes: [AnyHashable : Any] = [NSDeletedObjectsKey : objectIDArray as Any]
+            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
 }
