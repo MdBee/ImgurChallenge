@@ -87,8 +87,8 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         newItem.imageLink = link
         newItem.imageData = nil
         
-        let suffix = self.extensionForMimeType(rawItem["type"] as? String)
-        newItem.thumbnailLink = link.replacingOccurrences(of: suffix, with: "t" + suffix)
+        let suffix = (link as NSString).pathExtension
+        newItem.thumbnailLink = (link as NSString).deletingPathExtension + "t." + suffix
         newItem.thumbnailData = nil
 
         
@@ -112,18 +112,18 @@ class ImgurAPI: NSObject, URLSessionDelegate {
 //    }
     
     
-    func extensionForMimeType(_ mimeType: String?) -> String {
-        switch mimeType {
-        case "image/gif":
-            return ".gif"
-        case "image/jpeg":
-            return ".jpg"
-        case "image/png":
-            return ".png"
-        default:
-            return ""
-        }
-    }
+//    func extensionForMimeType(_ mimeType: String?) -> String {
+//        switch mimeType {
+//        case "image/gif":
+//            return ".gif"
+//        case "image/jpeg":
+//            return ".jpg"
+//        case "image/png":
+//            return ".png"
+//        default:
+//            return ""
+//        }
+//    }
     
     
     

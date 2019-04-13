@@ -42,7 +42,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        navigationItem.leftBarButtonItem = editButtonItem
+    //    navigationItem.leftBarButtonItem = editButtonItem
 
 //        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
 //        navigationItem.rightBarButtonItem = addButton
@@ -177,19 +177,29 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             else { print("no thumbnail link")
                 return
             }
+            
+            DispatchQueue.global(qos:.userInitiated).async {
+                
         if let imgURL = URL.init(string: link) {
             do {
+                
+                
                 let imageData = try Data(contentsOf: imgURL as URL);
                 let image = UIImage(data:imageData);
-                cell.imageView?.image = image
                 
+                DispatchQueue.main.async {
+                cell.imageView?.image = image
+                }
                 //update Item with imageData
                 item.thumbnailData = imageData
             } catch {
+                 DispatchQueue.main.async {
                 cell.imageView?.image = UIImage(named: "JohnWayne")
                 print("Unable to load data: \(error)")
+                }
             }
         }
+            }
         }
     }
 
@@ -206,7 +216,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         fetchRequest.fetchBatchSize = 100
         
         // Edit the sort key as appropriate.
-        let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
+        let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
         if isFilteringOutNsfw {
