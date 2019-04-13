@@ -38,6 +38,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     private var pageNumber: Int = 0
     @IBOutlet weak var nsfwButton: UIBarButtonItem!
     @IBOutlet weak var messageLabel: UILabel!
+    private var lastEntryTime: Date = Date()
+    private let debounceInterval: TimeInterval = 0.25
     
     // MARK: - View Life Cycle
     
@@ -162,6 +164,13 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let item = fetchedResultsController.object(at: indexPath)
         configureCell(cell as! ThumbnailTableViewCell, withItem: item)
+        
+        // When the last cell is set up...
+        if indexPath.row + 1 == _fetchedResultsController?.fetchedObjects?.count {
+            self.pageNumber += 1
+            self.debouncedNetworkFetch(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
+        }
+        
         return cell as! ThumbnailTableViewCell
     }
 
@@ -220,6 +229,21 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
                 }
             }
         }
+            }
+        }
+    }
+    
+    // MARK: - Network Calls
+    
+    func debouncedNetworkFetch(searchTerm: String, pageNumber: Int) {
+        self.lastEntryTime = Date()
+        
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + self.debounceInterval) {
+            if self.lastEntryTime + self.debounceInterval <= Date() {
+                if pageNumber == 0 {
+                    CoreDataStack.shared.deleteAll(entityName: "Item")
+                }
+                ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
             }
         }
     }
@@ -339,16 +363,16 @@ extension MasterViewController: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         MasterViewController.searchTerm = searchText
-        //DEBOUNCE
+        self.pageNumber = 0
+        self.debouncedNetworkFetch(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
         
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
         MasterViewController.searchTerm = searchBar.text ?? ""
-        CoreDataStack.shared.deleteAll(entityName: "Item")
-        //DEBOUNCE
-        ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
+        self.pageNumber = 0
+        self.debouncedNetworkFetch(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
     }
     
 }
