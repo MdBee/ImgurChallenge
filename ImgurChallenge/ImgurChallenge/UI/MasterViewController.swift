@@ -35,6 +35,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var container : NSPersistentContainer? { return CoreDataStack.shared.container }
     static var searchTerm: String = ""
     private var isFilteringOutNsfw: Bool = true
+    private var pageNumber: Int = 0
     @IBOutlet weak var nsfwButton: UIBarButtonItem!
     
     // MARK: - View Life Cycle
@@ -129,7 +130,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     // MARK: - Table View
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return fetchedResultsController.sections?.count ?? 0
+        return fetchedResultsController.sections?.count ?? 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -216,13 +217,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         fetchRequest.fetchBatchSize = 100
         
         // Edit the sort key as appropriate.
-        let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: true)
+        let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        if isFilteringOutNsfw {
-            let predicate = NSPredicate(format: "nsfw = %d", false)
-            fetchRequest.predicate = predicate
-        }
+//        if isFilteringOutNsfw {
+//            let predicate = NSPredicate(format: "nsfw = %d", false)
+//            fetchRequest.predicate = predicate
+//        }
         //all nsfw
 //            let predicate = NSPredicate(format: "nsfw = %d", true)
 //            fetchRequest.predicate = predicate
@@ -321,7 +322,7 @@ extension MasterViewController: UISearchBarDelegate {
         MasterViewController.searchTerm = searchBar.text ?? ""
         CoreDataStack.shared.deleteAll(entityName: "Item")
         //DEBOUNCE
-        ImgurAPI().fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: 0)
+        ImgurAPI().fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
     }
     
 }
