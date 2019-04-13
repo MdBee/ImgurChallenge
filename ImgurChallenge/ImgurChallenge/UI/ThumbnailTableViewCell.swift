@@ -25,6 +25,7 @@ class ThumbnailTableViewCell: UITableViewCell {
     
     override func prepareForReuse() {
         self.thumbnailImageView.image = UIImage()
+        self.thumbnailImageView.frame.size = CGSize(width: 160, height: 160)
         self.titleLabel.text = nil
         self.backgroundColor = UIColor.white
     }
