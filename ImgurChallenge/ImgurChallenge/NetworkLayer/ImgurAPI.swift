@@ -11,7 +11,6 @@ import CoreData
 
 enum Path {
     static let Search = "https://api.imgur.com/3/gallery/search/time/"
-    static let Image = ""
 }
 
 enum Error {
@@ -23,13 +22,16 @@ private let clientID = "Client-ID 126701cd8332f32"
 
 class ImgurAPI: NSObject, URLSessionDelegate {
     
-    //let context = CoreDataStack.shared.persistentContainer.viewContext
     var container : NSPersistentContainer? { return CoreDataStack.shared.container }
     
-    //@objc
     func persistData(_ jsonArray: [[String: Any]], searchTerm: String) {
         
         print(jsonArray.count)
+        
+        // Make sure the search term used is still the current one.
+        guard searchTerm == MasterViewController.searchTerm
+            else { print("searchTerm mismatch")
+                return }
         
         let galleryTitles: [String] = jsonArray.map({ $0["title"] as? String ?? "no gallery title" })
         

@@ -33,7 +33,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
     var container : NSPersistentContainer? { return CoreDataStack.shared.container }
-    public var searchTerm: String = ""
+    static var searchTerm: String = ""
     private var isFilteringOutNsfw: Bool = true
     @IBOutlet weak var nsfwButton: UIBarButtonItem!
     
@@ -295,17 +295,17 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 extension MasterViewController: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        self.searchTerm = searchText
+        MasterViewController.searchTerm = searchText
         //DEBOUNCE
         
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.resignFirstResponder()
-        self.searchTerm = searchBar.text ?? ""
+        MasterViewController.searchTerm = searchBar.text ?? ""
         CoreDataStack.shared.deleteAll(entityName: "Item")
         //DEBOUNCE
-        ImgurAPI().fetchFor(searchTerm: self.searchTerm, pageNumber: 0)
+        ImgurAPI().fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: 0)
     }
     
 }
