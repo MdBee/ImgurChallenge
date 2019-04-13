@@ -22,9 +22,9 @@ private let clientID = "Client-ID 126701cd8332f32"
 
 class ImgurAPI: NSObject, URLSessionDelegate {
     
-    var container : NSPersistentContainer? { return CoreDataStack.shared.container }
+    class var container : NSPersistentContainer? { return CoreDataStack.shared.container }
     
-    func persistData(_ jsonArray: [[String: Any]], searchTerm: String) {
+    class func persistData(_ jsonArray: [[String: Any]], searchTerm: String) {
         
         print(jsonArray.count)
         
@@ -34,6 +34,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
                 return }
         
         let galleryTitles: [String] = jsonArray.map({ $0["title"] as? String ?? "no gallery title" })
+        let galleryNsfw: [Bool] = jsonArray.map({ $0["nsfw"] as? Bool ?? false })
         
         
         let imageClusters = jsonArray.map({ $0["images"] })
@@ -43,8 +44,8 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         
         //guard...only persist if searchTerm is still the current one
 
-        guard galleryTitles.count == imageClusters.count
-            else { print("title mismatch error?")
+        guard galleryTitles.count == imageClusters.count, galleryNsfw.count == imageClusters.count
+            else { print("title or nsfw mismatch error")
                 return
                 }
 
@@ -53,12 +54,14 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         for (index, cluster) in imageClusters.enumerated() {
             
             let galleryTitle = galleryTitles[index]
+            let isNsfw = galleryNsfw[index]
             
             guard let validCluster = cluster as? [[String : Any]]
                 else { continue }
             for imageItem in validCluster {
                 var mutableItem = imageItem
                 mutableItem["galleryTitle"] = galleryTitle
+                mutableItem["nsfw"] = isNsfw
                 self.configureManagedObject(mutableItem)
         }
         }
@@ -70,7 +73,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
     
     //move to ImgurGalleryDataModel?
     
-    func configureManagedObject(_ rawItem: [String: Any]) {
+    class func configureManagedObject(_ rawItem: [String: Any]) {
         guard let context = self.container?.viewContext,
             //let title = rawItem["title"] as? String,
             let link = rawItem["link"] as? String
@@ -85,12 +88,12 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         //newItem.title = title
 //        newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
         //let isNsfw = NSNumber(booleanLiteral: <#T##Bool#>)
-       // newItem.nsfw = Bool(truncating: NSNumber(integerLiteral: rawItem["nsfw"] as? Int ?? 0))
-        if let isNsfw = rawItem["nsfw"] as? Int {
-        newItem.nsfw = Bool(isNsfw == 1 ? true : false)
-        } else {
-            newItem.nsfw = false
-        }
+        newItem.nsfw = rawItem["nsfw"] as? Bool ?? false
+       // if let isNsfw = rawItem["nsfw"] as? Int {
+        //newItem.nsfw = Bool(isNsfw == 1 ? true : false)
+        //} else {
+        //    newItem.nsfw = false
+        //}
         //newItem.nsfw = rawItem["nsfw"] as? Int == 1 ? true : false
         newItem.imageLink = link
         newItem.imageData = nil
@@ -136,7 +139,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
     
     
     
-    func fetchFor(searchTerm: String = "", pageNumber: Int = 0) {
+    class func fetchFor(searchTerm: String = "", pageNumber: Int = 0) {
         guard let escapedSearchTerm = searchTerm.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
             let url = URL(string: Path.Search + "\(pageNumber)" + "?q=" + escapedSearchTerm)
             else { print(Error.badURL)

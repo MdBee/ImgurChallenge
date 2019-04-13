@@ -77,7 +77,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         searchController.delegate = self
         searchController.dimsBackgroundDuringPresentation = false // The default is true.
         searchController.searchBar.delegate = self // Monitor when the search button is tapped.
-        searchController.searchBar.placeholder = "search Imgur for photos"
+        searchController.searchBar.placeholder = "photos from Imgur"
         definesPresentationContext = true
     }
 
@@ -86,10 +86,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         super.viewWillAppear(animated)
         
         if self.tableView.numberOfRows(inSection: 0) > 0 {
-        self.messageLabel.frame.size = CGSize(width: 0, height: 0)
+        //self.messageLabel.frame.size = CGSize(width: 0, height: 0)
+            self.messageLabel.removeFromSuperview()
         } else {
-            self.messageLabel.frame.size = CGSize(width: 250, height: 250)
+            //self.messageLabel.frame.size = CGSize(width: 250, height: 250)
             self.messageLabel.text = self.textForMessageLabel()
+            self.view.addSubview(self.messageLabel)
         }
         
         // Restore the searchController's active state.
@@ -164,8 +166,8 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
     }
 
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+        return false
+        //return true
     }
 
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
@@ -238,10 +240,10 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
         let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        if isFilteringOutNsfw {
-            let predicate = NSPredicate(format: "nsfw = %d", false)
-            fetchRequest.predicate = predicate
-        }
+//        if isFilteringOutNsfw {
+//            let predicate = NSPredicate(format: "nsfw == %d", NSNumber(false))
+//            fetchRequest.predicate = predicate
+//        }
         //all nsfw
 //            let predicate = NSPredicate(format: "nsfw = %d", true)
 //            fetchRequest.predicate = predicate
@@ -290,17 +292,17 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
     }
 
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+//        guard indexPath != nil, tableView.cellForRow(at: indexPath!) != nil
+//            else {
+//                print("got nil cell or anObject")
+//                return
+//        }
         switch type {
             case .insert:
                 tableView.insertRows(at: [newIndexPath!], with: .fade)
             case .delete:
                 tableView.deleteRows(at: [indexPath!], with: .fade)
             case .update:
-                guard tableView.cellForRow(at: indexPath!) != nil
-                    else {
-                    print("got nil cell or anObject")
-                    return
-                    }
                 configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
             case .move:
                 configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
@@ -309,6 +311,7 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
     }
 
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        
         tableView.endUpdates()
     }
 
@@ -345,7 +348,7 @@ extension MasterViewController: UISearchBarDelegate {
         MasterViewController.searchTerm = searchBar.text ?? ""
         CoreDataStack.shared.deleteAll(entityName: "Item")
         //DEBOUNCE
-        ImgurAPI().fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
+        ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
     }
     
 }
