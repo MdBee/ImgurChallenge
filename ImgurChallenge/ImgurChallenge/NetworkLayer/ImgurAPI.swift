@@ -83,7 +83,11 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
         newItem.title = rawItem["title"] as? String ?? (rawItem["galleryTitle"] as? String ?? "no title")
         //newItem.title = title
-        newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
+//        newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
+        //let isNsfw = NSNumber(booleanLiteral: <#T##Bool#>)
+       // newItem.nsfw = Bool(truncating: NSNumber(integerLiteral: rawItem["nsfw"] as? Int ?? 0))
+        newItem.nsfw = Bool(rawItem["nsfw"] as? Int == 1 ? true : false)
+        //newItem.nsfw = rawItem["nsfw"] as? Int == 1 ? true : false
         newItem.imageLink = link
         newItem.imageData = nil
         

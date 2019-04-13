@@ -37,6 +37,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     private var isFilteringOutNsfw: Bool = true
     private var pageNumber: Int = 0
     @IBOutlet weak var nsfwButton: UIBarButtonItem!
+    @IBOutlet weak var messageLabel: UILabel!
     
     // MARK: - View Life Cycle
     
@@ -214,16 +215,16 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
         
         // Set the batch size to a suitable number.
-        fetchRequest.fetchBatchSize = 100
+        fetchRequest.fetchBatchSize = 50
         
         // Edit the sort key as appropriate.
         let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-//        if isFilteringOutNsfw {
-//            let predicate = NSPredicate(format: "nsfw = %d", false)
-//            fetchRequest.predicate = predicate
-//        }
+        if isFilteringOutNsfw {
+            let predicate = NSPredicate(format: "nsfw = %d", false)
+            fetchRequest.predicate = predicate
+        }
         //all nsfw
 //            let predicate = NSPredicate(format: "nsfw = %d", true)
 //            fetchRequest.predicate = predicate
@@ -278,6 +279,11 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             case .delete:
                 tableView.deleteRows(at: [indexPath!], with: .fade)
             case .update:
+                guard tableView.cellForRow(at: indexPath!) != nil
+                    else {
+                    print("got nil cell or anObject")
+                    return
+                    }
                 configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
             case .move:
                 configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
