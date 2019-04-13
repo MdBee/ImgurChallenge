@@ -210,9 +210,15 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         fetchRequest.sortDescriptors = [sortDescriptor]
         
         if isFilteringOutNsfw {
-            let predicate = NSPredicate(format: "nsfw = false")
+            let predicate = NSPredicate(format: "nsfw = %d", false)
             fetchRequest.predicate = predicate
         }
+        //all nsfw
+//            let predicate = NSPredicate(format: "nsfw = %d", true)
+//            fetchRequest.predicate = predicate
+        
+        
+        
         
         //let context = CoreDataStack.shared.persistentContainer.viewContext
         guard let context = container?.viewContext
