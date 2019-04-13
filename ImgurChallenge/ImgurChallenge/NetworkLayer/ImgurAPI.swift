@@ -86,7 +86,11 @@ class ImgurAPI: NSObject, URLSessionDelegate {
 //        newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
         //let isNsfw = NSNumber(booleanLiteral: <#T##Bool#>)
        // newItem.nsfw = Bool(truncating: NSNumber(integerLiteral: rawItem["nsfw"] as? Int ?? 0))
-        newItem.nsfw = Bool(rawItem["nsfw"] as? Int == 1 ? true : false)
+        if let isNsfw = rawItem["nsfw"] as? Int {
+        newItem.nsfw = Bool(isNsfw == 1 ? true : false)
+        } else {
+            newItem.nsfw = false
+        }
         //newItem.nsfw = rawItem["nsfw"] as? Int == 1 ? true : false
         newItem.imageLink = link
         newItem.imageData = nil

@@ -46,6 +46,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     //    navigationItem.leftBarButtonItem = editButtonItem
 
+
 //        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
 //        navigationItem.rightBarButtonItem = addButton
         if let split = splitViewController {
@@ -76,12 +77,20 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         searchController.delegate = self
         searchController.dimsBackgroundDuringPresentation = false // The default is true.
         searchController.searchBar.delegate = self // Monitor when the search button is tapped.
+        searchController.searchBar.placeholder = "search Imgur for photos"
         definesPresentationContext = true
     }
 
     override func viewWillAppear(_ animated: Bool) {
         clearsSelectionOnViewWillAppear = splitViewController!.isCollapsed
         super.viewWillAppear(animated)
+        
+        if self.tableView.numberOfRows(inSection: 0) > 0 {
+        self.messageLabel.frame.size = CGSize(width: 0, height: 0)
+        } else {
+            self.messageLabel.frame.size = CGSize(width: 250, height: 250)
+            self.messageLabel.text = self.textForMessageLabel()
+        }
         
         // Restore the searchController's active state.
         if restoredState.wasActive {
@@ -126,6 +135,14 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
         }
+    }
+    
+    // MARK: - Messages
+    
+    private func textForMessageLabel() -> String {
+        return """
+Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title: ext: subreddit: album: meme:). An example compound query would be 'title: The Searchers AND movies ext: png'
+"""
     }
 
     // MARK: - Table View
