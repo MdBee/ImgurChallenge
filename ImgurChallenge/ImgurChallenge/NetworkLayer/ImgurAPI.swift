@@ -15,7 +15,7 @@ enum Path {
 
 private let clientID = "Client-ID 126701cd8332f32"
 
-class ImgurAPI: NSObject, URLSessionDelegate {
+class ImgurAPI: NSObject {
     class var container : NSPersistentContainer? { return CoreDataStack.shared.container }
     class func persistData(_ jsonArray: [[String: Any]], searchTerm: String) {
         
@@ -25,15 +25,13 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         guard searchTerm == MasterViewController.searchTerm
             else { print("searchTerm mismatch"); return }
         
-        //        let galleryTitles: [String] = jsonArray.map({ $0["title"] as? String ?? "no gallery title" })
-        //        let galleryNsfw: [Bool] = jsonArray.map({ $0["nsfw"] as? Bool ?? false })
-        
         // Because titles and nsfw (not safe for work) fields are more likely to be populated at the Gallery level in the JSON response we grab them here and use them with the photo if the photo does not specify a title and/or nsfw status.
         var galleryTitles = [String]()
         var galleryNsfw = [Bool]()
         jsonArray.forEach({
             galleryTitles.append($0["title"] as? String ?? "no gallery title")
-            galleryNsfw.append($0["nsfw"] as? Bool ?? false) })
+            galleryNsfw.append($0["nsfw"] as? Bool ?? false)
+        })
         
         let imageClusters = jsonArray.map({ $0["images"] })
         
@@ -43,10 +41,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
             galleryNsfw.count == imageClusters.count
             else { print("title or nsfw mismatch error"); return }
         
-        
-        //for cluster in imageClusters {
         for (index, cluster) in imageClusters.enumerated() {
-            
             let galleryTitle = galleryTitles[index]
             let isNsfw = galleryNsfw[index]
             
@@ -59,17 +54,11 @@ class ImgurAPI: NSObject, URLSessionDelegate {
                 self.configureManagedObject(mutableItem)
             }
         }
-        
-        //self.saveTheManagedObjects()
         CoreDataStack.shared.saveContext()
     }
     
-    
-    //move to ImgurGalleryDataModel?
-    
     class func configureManagedObject(_ rawItem: [String: Any]) {
         guard let context = self.container?.viewContext,
-            //let title = rawItem["title"] as? String,
             let link = rawItem["link"] as? String
             else { return }
         guard link != ""
@@ -79,16 +68,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         
         newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
         newItem.title = rawItem["title"] as? String ?? (rawItem["galleryTitle"] as? String ?? "no title")
-        //newItem.title = title
-        //        newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
-        //let isNsfw = NSNumber(booleanLiteral: <#T##Bool#>)
         newItem.nsfw = rawItem["nsfw"] as? Bool ?? false
-        // if let isNsfw = rawItem["nsfw"] as? Int {
-        //newItem.nsfw = Bool(isNsfw == 1 ? true : false)
-        //} else {
-        //    newItem.nsfw = false
-        //}
-        //newItem.nsfw = rawItem["nsfw"] as? Int == 1 ? true : false
         newItem.imageLink = link
         newItem.imageData = nil
         
@@ -96,11 +76,6 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         newItem.thumbnailLink = (link as NSString).deletingPathExtension + "t." + suffix
         newItem.thumbnailData = nil
     }
-    
-    
-    
-    
-    
     
     class func fetchFor(searchTerm: String = "", pageNumber: Int = 0) {
         guard let escapedSearchTerm = searchTerm.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
@@ -110,34 +85,16 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         
         request.setValue(clientID, forHTTPHeaderField: "Authorization")
         request.httpMethod = "GET"
-        //request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
         
         URLSession.shared.dataTask(with: request as URLRequest) { (data, response, error) in
             do {
                 if error == nil {
                     if let _ = response as? HTTPURLResponse {
-                        //print(res.debugDescription)
-                        
-                        //this works
                         let responseObject = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
-                        //print(responseObject)
-                        
-                        //ng
                         if let jsonArray = (responseObject as! [String: Any])["data"] as? [[String: Any]] {
                             print(jsonArray.count)
-                            
-                            
-                            //                        let compact = jsonArray.compactMap({ $0 })
-                            //                        print(compact.count)
-                            //                        print(compact)
-                            
-                            //DispatchQueue.main.async {
                             self.persistData(jsonArray, searchTerm: searchTerm)
-                            //}
-                            
                         }
-                        
                     } else {
                         print("Bad response error 1")
                     }
@@ -150,16 +107,5 @@ class ImgurAPI: NSObject, URLSessionDelegate {
             }
             }.resume()
     }
-    
-    //MARK: URLSessionTaskDelegate
-    func urlSession(_ session: URLSession,
-                    task: URLSessionTask,
-                    didCompleteWithError error: Error?){
-        //downloadTask = nil
-        if (error != nil) {
-            print(error.debugDescription)
-        }else{
-            print("The task finished transferring data successfully")
-        }
-    }
 }
+

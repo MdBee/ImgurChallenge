@@ -299,6 +299,8 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
     }
     
     var _fetchedResultsController: NSFetchedResultsController<Item>? = nil
+    
+    
 
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.beginUpdates()
@@ -335,7 +337,7 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
     }
 
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        
+
         tableView.endUpdates()
     }
 
@@ -344,6 +346,7 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
      
     private func controllerDidChangeContent(controller: NSFetchedResultsController<NSFetchRequestResult>) {
          // In the simplest, most efficient, case, reload the table view.
+        tableView.endUpdates()
          tableView.reloadData()
      }
 
