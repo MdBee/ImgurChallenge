@@ -13,43 +13,37 @@ enum Path {
     static let Search = "https://api.imgur.com/3/gallery/search/time/"
 }
 
-enum Error {
-    case badURL
-    case badResponse(Int)
-}
-
 private let clientID = "Client-ID 126701cd8332f32"
 
 class ImgurAPI: NSObject, URLSessionDelegate {
-    
     class var container : NSPersistentContainer? { return CoreDataStack.shared.container }
-    
     class func persistData(_ jsonArray: [[String: Any]], searchTerm: String) {
         
         print(jsonArray.count)
         
         // Make sure the search term used is still the current one.
         guard searchTerm == MasterViewController.searchTerm
-            else { print("searchTerm mismatch")
-                return }
+            else { print("searchTerm mismatch"); return }
         
-        let galleryTitles: [String] = jsonArray.map({ $0["title"] as? String ?? "no gallery title" })
-        let galleryNsfw: [Bool] = jsonArray.map({ $0["nsfw"] as? Bool ?? false })
+        //        let galleryTitles: [String] = jsonArray.map({ $0["title"] as? String ?? "no gallery title" })
+        //        let galleryNsfw: [Bool] = jsonArray.map({ $0["nsfw"] as? Bool ?? false })
         
+        // Because titles and nsfw (not safe for work) fields are more likely to be populated at the Gallery level in the JSON response we grab them here and use them with the photo if the photo does not specify a title and/or nsfw status.
+        var galleryTitles = [String]()
+        var galleryNsfw = [Bool]()
+        jsonArray.forEach({
+            galleryTitles.append($0["title"] as? String ?? "no gallery title")
+            galleryNsfw.append($0["nsfw"] as? Bool ?? false) })
         
         let imageClusters = jsonArray.map({ $0["images"] })
-        //let imageClusters = jsonArray.compactMap({ $0["images"] })
         
         print(imageClusters.count)
         
-        //guard...only persist if searchTerm is still the current one
-
-        guard galleryTitles.count == imageClusters.count, galleryNsfw.count == imageClusters.count
-            else { print("title or nsfw mismatch error")
-                return
-                }
-
-
+        guard galleryTitles.count == imageClusters.count,
+            galleryNsfw.count == imageClusters.count
+            else { print("title or nsfw mismatch error"); return }
+        
+        
         //for cluster in imageClusters {
         for (index, cluster) in imageClusters.enumerated() {
             
@@ -63,7 +57,7 @@ class ImgurAPI: NSObject, URLSessionDelegate {
                 mutableItem["galleryTitle"] = galleryTitle
                 mutableItem["nsfw"] = isNsfw
                 self.configureManagedObject(mutableItem)
-        }
+            }
         }
         
         //self.saveTheManagedObjects()
@@ -82,14 +76,14 @@ class ImgurAPI: NSObject, URLSessionDelegate {
             else {return }
         
         let newItem = Item(context: context)
-
+        
         newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
         newItem.title = rawItem["title"] as? String ?? (rawItem["galleryTitle"] as? String ?? "no title")
         //newItem.title = title
-//        newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
+        //        newItem.nsfw = Bool(rawItem["nsfw"] as? Bool ?? false)
         //let isNsfw = NSNumber(booleanLiteral: <#T##Bool#>)
         newItem.nsfw = rawItem["nsfw"] as? Bool ?? false
-       // if let isNsfw = rawItem["nsfw"] as? Int {
+        // if let isNsfw = rawItem["nsfw"] as? Int {
         //newItem.nsfw = Bool(isNsfw == 1 ? true : false)
         //} else {
         //    newItem.nsfw = false
@@ -101,40 +95,9 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         let suffix = (link as NSString).pathExtension
         newItem.thumbnailLink = (link as NSString).deletingPathExtension + "t." + suffix
         newItem.thumbnailData = nil
-
-        
-        //return newItem
-       // self.saveTheManagedObjects()
-       // context.insert(newItem)
-       // CoreDataStack.shared.saveContext()
     }
     
-//    func saveTheManagedObjects() {
-//        // Save the context.
-//        do {
-//            try context.save()
-//        } catch {
-//            // Replace this implementation with code to handle the error appropriately.
-//            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-//            let nserror = error as NSError
-//            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-//        }
-//
-//    }
     
-    
-//    func extensionForMimeType(_ mimeType: String?) -> String {
-//        switch mimeType {
-//        case "image/gif":
-//            return ".gif"
-//        case "image/jpeg":
-//            return ".jpg"
-//        case "image/png":
-//            return ".png"
-//        default:
-//            return ""
-//        }
-//    }
     
     
     
@@ -142,51 +105,50 @@ class ImgurAPI: NSObject, URLSessionDelegate {
     class func fetchFor(searchTerm: String = "", pageNumber: Int = 0) {
         guard let escapedSearchTerm = searchTerm.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
             let url = URL(string: Path.Search + "\(pageNumber)" + "?q=" + escapedSearchTerm)
-            else { print(Error.badURL)
-                    return }
+            else { print("Bad URL error."); return }
         let request = NSMutableURLRequest(url: url)
         
         request.setValue(clientID, forHTTPHeaderField: "Authorization")
         request.httpMethod = "GET"
         //request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-    
+        
+        
         URLSession.shared.dataTask(with: request as URLRequest) { (data, response, error) in
             do {
-            if error == nil {
-                if let _ = response as? HTTPURLResponse {
-                    //print(res.debugDescription)
-                    
-                    //this works
-                    let responseObject = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
-                    //print(responseObject)
-                    
-                    //ng
-                    if let jsonArray = (responseObject as! [String: Any])["data"] as? [[String: Any]] {
-                       print(jsonArray.count)
-                    
-                    
-//                        let compact = jsonArray.compactMap({ $0 })
-//                        print(compact.count)
-//                        print(compact)
+                if error == nil {
+                    if let _ = response as? HTTPURLResponse {
+                        //print(res.debugDescription)
                         
-                        //DispatchQueue.main.async {
+                        //this works
+                        let responseObject = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
+                        //print(responseObject)
+                        
+                        //ng
+                        if let jsonArray = (responseObject as! [String: Any])["data"] as? [[String: Any]] {
+                            print(jsonArray.count)
+                            
+                            
+                            //                        let compact = jsonArray.compactMap({ $0 })
+                            //                        print(compact.count)
+                            //                        print(compact)
+                            
+                            //DispatchQueue.main.async {
                             self.persistData(jsonArray, searchTerm: searchTerm)
-                        //}
+                            //}
+                            
+                        }
                         
+                    } else {
+                        print("Bad response error 1")
                     }
-                
                 } else {
-                   print(Error.badResponse(2))
+                    print("Error = " + String(describing: error))
                 }
-            } else {
-                print("Error = " + String(describing: error))
-            }
             } catch {
-                print(Error.badResponse(1))
+                print("Bad response error 2")
                 print(error.localizedDescription)
             }
-        }.resume()
+            }.resume()
     }
     
     //MARK: URLSessionTaskDelegate
@@ -201,4 +163,3 @@ class ImgurAPI: NSObject, URLSessionDelegate {
         }
     }
 }
-
