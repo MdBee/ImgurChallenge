@@ -12,6 +12,12 @@ import CoreData
 class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
     // MARK: - Types
+    private enum MessageLabelStates: String {
+        case instructions
+        case spinner
+        case noResults
+        case hidden
+    }
     
     private enum RestorationKeys: String {
         case viewControllerTitle
@@ -30,7 +36,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     // MARK: - Properties
     
     private var searchController: UISearchController!
-    //private var resultsTableController: ResultsTableController!
     private var restoredState = SearchControllerRestorableState()
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
@@ -147,7 +152,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     private func textForMessageLabel() -> String {
         return """
-        Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title: ext: subreddit: album: meme:). An example compound query would be 'title: The Searchers AND movies ext: png'
+        Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title: ext: subreddit: album: meme:). An example compound query would be 'title: The Searchers OR album: John Wayne'
         """
     }
     
@@ -237,7 +242,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     // MARK: - Network Calls
     
-    func debouncedNetworkFetch(searchTerm: String, pageNumber: Int) {
+    func debouncedNetworkFetch(searchTerm: String, pageNumber: Int = 0) {
         self.lastEntryTime = Date()
         
         DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + self.debounceInterval) {
@@ -249,7 +254,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                         self.tableView.reloadData()
                     }
                 }
-                ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
+                ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: pageNumber)
             }
         }
     }
@@ -274,20 +279,11 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             let predicate = NSPredicate(format: "nsfw == %d", Bool(false))
             fetchRequest.predicate = predicate
         }
-        //all nsfw
-        //            let predicate = NSPredicate(format: "nsfw = %d", true)
-        //            fetchRequest.predicate = predicate
-        
-        
-        
-        
-        //let context = CoreDataStack.shared.persistentContainer.viewContext
+
         guard let context = container?.viewContext
             else { print("FetchedResultsController error 1")
                 return NSFetchedResultsController() }
-        
-        // Edit the section name key path and cache name if appropriate.
-        // nil for section name key path means "no sections".
+
         let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: "Master")
         aFetchedResultsController.delegate = self
         _fetchedResultsController = aFetchedResultsController
@@ -333,6 +329,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         case .insert:
             tableView.insertRows(at: [newIndexPath!], with: .fade)
         case .delete:
+            guard indexPath != nil
+                else { print("nil indexPath"); return }
             tableView.deleteRows(at: [indexPath!], with: .fade)
         case .update:
             guard self.tableView.indexPathsForVisibleRows?.contains(indexPath ?? IndexPath()) ?? false
@@ -382,7 +380,7 @@ extension MasterViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         MasterViewController.searchTerm = searchText
         self.pageNumber = 0
-        self.debouncedNetworkFetch(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
+        self.debouncedNetworkFetch(searchTerm: MasterViewController.searchTerm)
         
     }
     
@@ -390,7 +388,7 @@ extension MasterViewController: UISearchBarDelegate {
         searchBar.resignFirstResponder()
         MasterViewController.searchTerm = searchBar.text ?? ""
         self.pageNumber = 0
-        self.debouncedNetworkFetch(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
+        self.debouncedNetworkFetch(searchTerm: MasterViewController.searchTerm)
     }
     
 }

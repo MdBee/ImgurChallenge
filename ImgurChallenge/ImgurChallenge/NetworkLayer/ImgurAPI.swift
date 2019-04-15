@@ -50,7 +50,7 @@ class ImgurAPI: NSObject {
             for imageItem in validCluster {
                 var mutableItem = imageItem
                 mutableItem["galleryTitle"] = galleryTitle
-                mutableItem["nsfw"] = isNsfw
+                mutableItem["galleryNsfw"] = isNsfw
                 self.configureManagedObject(mutableItem)
             }
         }
@@ -68,7 +68,7 @@ class ImgurAPI: NSObject {
         
         newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
         newItem.title = rawItem["title"] as? String ?? (rawItem["galleryTitle"] as? String ?? "no title")
-        newItem.nsfw = rawItem["nsfw"] as? Bool ?? false
+        newItem.nsfw = rawItem["nsfw"] as? Bool ?? (rawItem["galleryNsfw"] as? Bool ?? false)
         newItem.imageLink = link
         newItem.imageData = nil
         
