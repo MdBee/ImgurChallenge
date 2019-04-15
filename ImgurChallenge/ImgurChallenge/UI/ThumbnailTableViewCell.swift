@@ -12,8 +12,7 @@ import UIKit
 class ThumbnailTableViewCell: UITableViewCell {
     @IBOutlet weak var thumbnailImageView: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
-    
-    
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -28,6 +27,6 @@ class ThumbnailTableViewCell: UITableViewCell {
         self.thumbnailImageView.frame.size = CGSize(width: 160, height: 160)
         self.titleLabel.text = nil
         self.backgroundColor = UIColor.white
+        self.activityIndicator.isHidden = false
     }
-    
 }

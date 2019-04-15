@@ -203,37 +203,36 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
     
     func configureCell(_ cell: ThumbnailTableViewCell, withItem item: Item) {
-        //cell.textLabel!.text = item.title
         cell.titleLabel.text = item.title
+        cell.activityIndicator?.isHidden = false
         
         if item.thumbnailData != nil {
             cell.imageView?.image = UIImage(data: item.thumbnailData!)
+            cell.activityIndicator?.isHidden = true
         } else {
-            
             guard let link = item.thumbnailLink
-                else { print("no thumbnail link")
-                    return
-            }
+                else { return }
             
             DispatchQueue.global(qos:.userInitiated).async {
-                
                 if let imgURL = URL.init(string: link) {
                     do {
-                        
-                        
                         let imageData = try Data(contentsOf: imgURL as URL);
                         let image = UIImage(data:imageData);
                         
                         DispatchQueue.main.async {
                             cell.imageView?.image = image
+                            cell.activityIndicator?.isHidden = true
+                            
+                            // Update Item with imageData.
+                            item.thumbnailData = imageData
+                            // Refault it for the next time it is accessed.
+                            item.managedObjectContext?.refresh(item, mergeChanges: true)
                         }
-                        //update Item with imageData
-                        item.thumbnailData = imageData
                     } catch {
                         DispatchQueue.main.async {
-                            cell.imageView?.image = UIImage(named: "JohnWayne")
-                            print("Unable to load data: \(error)")
+                            cell.activityIndicator?.isHidden = true
                         }
+                        print("Unable to load data: \(error)")
                     }
                 }
             }

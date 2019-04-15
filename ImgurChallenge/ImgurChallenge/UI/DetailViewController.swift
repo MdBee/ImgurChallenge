@@ -12,12 +12,9 @@ class DetailViewController: UIViewController {
     
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var imageView: UIImageView!
-    
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
-    
     func configureView() {
-        // Update the user interface for the detail item.
         if let detail = detailItem {
             self.title = detail.title
             self.activityIndicator?.isHidden = false
@@ -33,13 +30,16 @@ class DetailViewController: UIViewController {
                         let imageData = try Data(contentsOf: imgURL as URL);
                         let image = UIImage(data: imageData);
                         DispatchQueue.main.async {
-                        self.imageView?.image = image
-                        self.activityIndicator?.isHidden = true
-                        }
-                        
-                        //update Item with imageData
+                            self.imageView?.image = image
+                            self.activityIndicator?.isHidden = true
+                       
+                        // Update Item with imageData.
                         detail.imageData = imageData
+                        // Refault it for the next time it is accessed.
+                        detail.managedObjectContext?.refresh(detail, mergeChanges: true)
+                        }
                     } catch {
+                        self.activityIndicator?.isHidden = true
                         print("Unable to load data: \(error)")
                     }
                 }
