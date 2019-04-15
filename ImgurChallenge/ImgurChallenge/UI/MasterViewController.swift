@@ -12,7 +12,7 @@ import CoreData
 class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
     // MARK: - Types
-
+    
     private enum RestorationKeys: String {
         case viewControllerTitle
         case searchControllerIsActive
@@ -26,9 +26,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         var wasActive = false
         var wasFirstResponder = false
     }
-
+    
     // MARK: - Properties
-
+    
     private var searchController: UISearchController!
     //private var resultsTableController: ResultsTableController!
     private var restoredState = SearchControllerRestorableState()
@@ -47,22 +47,22 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-    //    navigationItem.leftBarButtonItem = editButtonItem
-
-
-//        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
-//        navigationItem.rightBarButtonItem = addButton
+        
+        //    navigationItem.leftBarButtonItem = editButtonItem
+        
+        
+        //        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
+        //        navigationItem.rightBarButtonItem = addButton
         if let split = splitViewController {
             let controllers = split.viewControllers
             detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
         }
         
-//        resultsTableController = ResultsTableController()
-//
-//        resultsTableController.tableView.delegate = self
+        //        resultsTableController = ResultsTableController()
+        //
+        //        resultsTableController.tableView.delegate = self
         
-//        searchController = UISearchController(searchResultsController: resultsTableController)
+        //        searchController = UISearchController(searchResultsController: resultsTableController)
         searchController = UISearchController(searchResultsController: nil)
         //searchController.searchResultsUpdater = self
         searchController.searchBar.autocapitalizationType = .none
@@ -84,13 +84,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         searchController.searchBar.placeholder = "photos from Imgur"
         definesPresentationContext = true
     }
-
+    
     override func viewWillAppear(_ animated: Bool) {
         clearsSelectionOnViewWillAppear = splitViewController!.isCollapsed
         super.viewWillAppear(animated)
         
         if self.tableView.numberOfRows(inSection: 0) > 0 {
-        //self.messageLabel.frame.size = CGSize(width: 0, height: 0)
+            //self.messageLabel.frame.size = CGSize(width: 0, height: 0)
             self.messageLabel.removeFromSuperview()
         } else {
             //self.messageLabel.frame.size = CGSize(width: 250, height: 250)
@@ -109,32 +109,32 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             }
         }
     }
-
-//    @objc
-//    func insertNewObject(_ sender: Any) {
-//        let context = self.fetchedResultsController.managedObjectContext
-//        let newEvent = Event(context: context)
-//
-//        // If appropriate, configure the new managed object.
-//        newEvent.timestamp = Date()
-//
-//        // Save the context.
-//        do {
-//            try context.save()
-//        } catch {
-//            // Replace this implementation with code to handle the error appropriately.
-//            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-//            let nserror = error as NSError
-//            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-//        }
- //   }
-
+    
+    //    @objc
+    //    func insertNewObject(_ sender: Any) {
+    //        let context = self.fetchedResultsController.managedObjectContext
+    //        let newEvent = Event(context: context)
+    //
+    //        // If appropriate, configure the new managed object.
+    //        newEvent.timestamp = Date()
+    //
+    //        // Save the context.
+    //        do {
+    //            try context.save()
+    //        } catch {
+    //            // Replace this implementation with code to handle the error appropriately.
+    //            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+    //            let nserror = error as NSError
+    //            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+    //        }
+    //   }
+    
     // MARK: - Segues
-
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             if let indexPath = tableView.indexPathForSelectedRow {
-            let object = fetchedResultsController.object(at: indexPath)
+                let object = fetchedResultsController.object(at: indexPath)
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
                 controller.detailItem = object
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
@@ -147,21 +147,21 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     private func textForMessageLabel() -> String {
         return """
-Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title: ext: subreddit: album: meme:). An example compound query would be 'title: The Searchers AND movies ext: png'
-"""
+        Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title: ext: subreddit: album: meme:). An example compound query would be 'title: The Searchers AND movies ext: png'
+        """
     }
-
+    
     // MARK: - Table View
-
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return fetchedResultsController.sections?.count ?? 1
     }
-
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let sectionInfo = fetchedResultsController.sections![section]
         return sectionInfo.numberOfObjects
     }
-
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> ThumbnailTableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let item = fetchedResultsController.object(at: indexPath)
@@ -175,17 +175,17 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
         
         return cell as! ThumbnailTableViewCell
     }
-
+    
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return false
         //return true
     }
-
+    
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let context = fetchedResultsController.managedObjectContext
             context.delete(fetchedResultsController.object(at: indexPath))
-                
+            
             do {
                 try context.save()
             } catch {
@@ -196,7 +196,7 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
             }
         }
     }
-
+    
     func configureCell(_ cell: ThumbnailTableViewCell, withItem item: Item) {
         //cell.textLabel!.text = item.title
         cell.titleLabel.text = item.title
@@ -204,33 +204,33 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
         if item.thumbnailData != nil {
             cell.imageView?.image = UIImage(data: item.thumbnailData!)
         } else {
-        
-        guard let link = item.thumbnailLink
-            else { print("no thumbnail link")
-                return
+            
+            guard let link = item.thumbnailLink
+                else { print("no thumbnail link")
+                    return
             }
             
             DispatchQueue.global(qos:.userInitiated).async {
                 
-        if let imgURL = URL.init(string: link) {
-            do {
-                
-                
-                let imageData = try Data(contentsOf: imgURL as URL);
-                let image = UIImage(data:imageData);
-                
-                DispatchQueue.main.async {
-                cell.imageView?.image = image
+                if let imgURL = URL.init(string: link) {
+                    do {
+                        
+                        
+                        let imageData = try Data(contentsOf: imgURL as URL);
+                        let image = UIImage(data:imageData);
+                        
+                        DispatchQueue.main.async {
+                            cell.imageView?.image = image
+                        }
+                        //update Item with imageData
+                        item.thumbnailData = imageData
+                    } catch {
+                        DispatchQueue.main.async {
+                            cell.imageView?.image = UIImage(named: "JohnWayne")
+                            print("Unable to load data: \(error)")
+                        }
+                    }
                 }
-                //update Item with imageData
-                item.thumbnailData = imageData
-            } catch {
-                 DispatchQueue.main.async {
-                cell.imageView?.image = UIImage(named: "JohnWayne")
-                print("Unable to load data: \(error)")
-                }
-            }
-        }
             }
         }
     }
@@ -244,14 +244,18 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
             if self.lastEntryTime + self.debounceInterval <= Date() {
                 if pageNumber == 0 {
                     CoreDataStack.shared.deleteAll(entityName: "Item")
+                    self._fetchedResultsController = nil
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
                 }
                 ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
             }
         }
     }
-
+    
     // MARK: - Fetched results controller
-
+    
     var fetchedResultsController: NSFetchedResultsController<Item> {
         if _fetchedResultsController != nil {
             return _fetchedResultsController!
@@ -266,13 +270,13 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
         let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-//        if isFilteringOutNsfw {
-//            let predicate = NSPredicate(format: "nsfw == %d", NSNumber(false))
-//            fetchRequest.predicate = predicate
-//        }
+        if isFilteringOutNsfw {
+            let predicate = NSPredicate(format: "nsfw == %d", Bool(false))
+            fetchRequest.predicate = predicate
+        }
         //all nsfw
-//            let predicate = NSPredicate(format: "nsfw = %d", true)
-//            fetchRequest.predicate = predicate
+        //            let predicate = NSPredicate(format: "nsfw = %d", true)
+        //            fetchRequest.predicate = predicate
         
         
         
@@ -291,10 +295,10 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
         do {
             try _fetchedResultsController!.performFetch()
         } catch {
-             // Replace this implementation with code to handle the error appropriately.
-             // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development. 
-             let nserror = error as NSError
-             fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+            // Replace this implementation with code to handle the error appropriately.
+            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+            let nserror = error as NSError
+            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
         }
         
         return _fetchedResultsController!
@@ -303,55 +307,57 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
     var _fetchedResultsController: NSFetchedResultsController<Item>? = nil
     
     
-
+    
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.beginUpdates()
     }
-
+    
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
         switch type {
-            case .insert:
-                tableView.insertSections(IndexSet(integer: sectionIndex), with: .fade)
-            case .delete:
-                tableView.deleteSections(IndexSet(integer: sectionIndex), with: .fade)
-            default:
-                return
+        case .insert:
+            tableView.insertSections(IndexSet(integer: sectionIndex), with: .fade)
+        case .delete:
+            tableView.deleteSections(IndexSet(integer: sectionIndex), with: .fade)
+        default:
+            return
         }
     }
-
+    
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-//        guard indexPath != nil, tableView.cellForRow(at: indexPath!) != nil
-//            else {
-//                print("got nil cell or anObject")
-//                return
-//        }
+        //        guard indexPath != nil, tableView.cellForRow(at: indexPath!) != nil
+        //            else {
+        //                print("got nil cell or anObject")
+        //                return
+        //        }
         switch type {
-            case .insert:
-                tableView.insertRows(at: [newIndexPath!], with: .fade)
-            case .delete:
-                tableView.deleteRows(at: [indexPath!], with: .fade)
-            case .update:
+        case .insert:
+            tableView.insertRows(at: [newIndexPath!], with: .fade)
+        case .delete:
+            tableView.deleteRows(at: [indexPath!], with: .fade)
+        case .update:
+            guard self.tableView.indexPathsForVisibleRows?.contains(indexPath ?? IndexPath()) ?? false
+                else { print("indexPath out of visible."); return }
                 configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
-            case .move:
-                configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
-                tableView.moveRow(at: indexPath!, to: newIndexPath!)
+        case .move:
+            configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
+            tableView.moveRow(at: indexPath!, to: newIndexPath!)
         }
     }
-
+    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-
+        
         tableView.endUpdates()
     }
-
-
-     // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
-     
+    
+    
+    // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
+    
     private func controllerDidChangeContent(controller: NSFetchedResultsController<NSFetchRequestResult>) {
-         // In the simplest, most efficient, case, reload the table view.
+        // In the simplest, most efficient, case, reload the table view.
         tableView.endUpdates()
-         tableView.reloadData()
-     }
-
+        tableView.reloadData()
+    }
+    
     
     // MARK: - Button Action
     
@@ -359,6 +365,13 @@ Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title:
         self.isFilteringOutNsfw = !self.isFilteringOutNsfw
         self.nsfwButton.title = self.isFilteringOutNsfw ? "nsfw is filtered out" : "NSFW is allowed"
         self.nsfwButton.tintColor = self.isFilteringOutNsfw ? UIColor.orange : UIColor.red
+        
+        // Clear data based on old setting and perform same search with new setting.
+        CoreDataStack.shared.deleteAll(entityName: "Item")
+        self._fetchedResultsController = nil
+        self.tableView.reloadData()
+        self.pageNumber = 0
+        ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: 0)
     }
 }
 
@@ -415,8 +428,8 @@ extension MasterViewController: UISearchControllerDelegate {
 // MARK: - UISearchResultsUpdating
 
 //extension MasterViewController: UISearchResultsUpdating {
-    
- //   private func findMatches(searchString: String) -> NSCompoundPredicate {
+
+//   private func findMatches(searchString: String) -> NSCompoundPredicate {
 //        /** Each searchString creates an OR predicate for: name, yearIntroduced, introPrice.
 //         Example if searchItems contains "Gladiolus 51.99 2001":
 //         name CONTAINS[c] "gladiolus"
@@ -480,9 +493,9 @@ extension MasterViewController: UISearchControllerDelegate {
 //
 //        return orMatchPredicate
 //    }
-    
+
 //    func updateSearchResults(for searchController: UISearchController) {
-        // Update the filtered array based on the search text.
+// Update the filtered array based on the search text.
 //        let searchResults = products
 //
 //        // Strip out all the leading and trailing spaces.
@@ -508,7 +521,7 @@ extension MasterViewController: UISearchControllerDelegate {
 //            resultsController.tableView.reloadData()
 //        }
 //    }
-    
+
 //}
 
 // MARK: - UIStateRestoration
