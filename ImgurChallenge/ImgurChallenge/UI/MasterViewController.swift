@@ -18,6 +18,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         case searchControllerIsActive
         case searchBarText
         case searchBarIsFirstResponder
+        case messageLabelText
+        case currentPageNumber
     }
     
     private struct SearchControllerRestorableState {
@@ -528,6 +530,9 @@ extension MasterViewController {
         
         // Encode the search bar text.
         coder.encode(searchController.searchBar.text, forKey: RestorationKeys.searchBarText.rawValue)
+        
+        coder.encode(messageLabel.text, forKey: RestorationKeys.messageLabelText.rawValue)
+        coder.encode(pageNumber, forKey: RestorationKeys.currentPageNumber.rawValue)
     }
     
     override func decodeRestorableState(with coder: NSCoder) {
@@ -553,5 +558,8 @@ extension MasterViewController {
         
         // Restore the text in the search field.
         searchController.searchBar.text = coder.decodeObject(forKey: RestorationKeys.searchBarText.rawValue) as? String
+        
+        messageLabel.text = coder.decodeObject(forKey: RestorationKeys.messageLabelText.rawValue) as? String
+        pageNumber = coder.decodeObject(forKey: RestorationKeys.currentPageNumber.rawValue) as? Int ?? 0
     }
 }
