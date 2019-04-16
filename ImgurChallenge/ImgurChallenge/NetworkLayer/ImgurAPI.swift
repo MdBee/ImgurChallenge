@@ -19,7 +19,7 @@ class ImgurAPI: NSObject {
     class var container : NSPersistentContainer? { return CoreDataStack.shared.container }
     class func persistData(_ jsonArray: [[String: Any]], searchTerm: String) {
         
-        print(jsonArray.count)
+        debugPrint(jsonArray.count)
         
         // Make sure the search term used is still the current one.
         guard searchTerm == MasterViewController.searchTerm
@@ -35,11 +35,11 @@ class ImgurAPI: NSObject {
         
         let imageClusters = jsonArray.map({ $0["images"] })
         
-        print(imageClusters.count)
+        debugPrint(imageClusters.count)
         
         guard galleryTitles.count == imageClusters.count,
             galleryNsfw.count == imageClusters.count
-            else { print("title or nsfw mismatch error"); return }
+            else { debugPrint("title or nsfw mismatch error"); return }
         
         for (index, cluster) in imageClusters.enumerated() {
             let galleryTitle = galleryTitles[index]
@@ -92,18 +92,24 @@ class ImgurAPI: NSObject {
                     if let _ = response as? HTTPURLResponse {
                         let responseObject = try JSONSerialization.jsonObject(with: data ?? Data(), options: .allowFragments)
                         if let jsonArray = (responseObject as! [String: Any])["data"] as? [[String: Any]] {
-                            print(jsonArray.count)
+                            debugPrint(jsonArray.count)
+                            
+                            // No results.
+                            if jsonArray.count == 0 {
+                                NotificationCenter.default.post(name: .noResults, object: self)
+                                debugPrint("Posted no results notification")
+                            }
                             self.persistData(jsonArray, searchTerm: searchTerm)
                         }
                     } else {
-                        print("Bad response error 1")
+                        debugPrint("Bad response error 1")
                     }
                 } else {
-                    print("Error = " + String(describing: error))
+                    debugPrint("Error = " + String(describing: error))
                 }
             } catch {
-                print("Bad response error 2")
-                print(error.localizedDescription)
+                debugPrint("Bad response error 2")
+                debugPrint(error.localizedDescription)
             }
             }.resume()
     }

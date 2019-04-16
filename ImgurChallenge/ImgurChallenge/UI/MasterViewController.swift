@@ -12,9 +12,9 @@ import CoreData
 class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
     // MARK: - Types
-    private enum MessageLabelStates: String {
+    private enum MessageLabelState: String {
         case instructions
-        case spinner
+        case loading
         case noResults
         case hidden
     }
@@ -41,12 +41,15 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var managedObjectContext: NSManagedObjectContext? = nil
     var container : NSPersistentContainer? { return CoreDataStack.shared.container }
     static var searchTerm: String = ""
-    private var isFilteringOutNsfw: Bool = true
+    private var isFilteringOutNsfw = true
     private var pageNumber: Int = 0
     @IBOutlet weak var nsfwButton: UIBarButtonItem!
     @IBOutlet weak var messageLabel: UILabel!
+    @IBOutlet var spinner: UIActivityIndicatorView!
+    
     private var lastEntryTime: Date = Date()
     private let debounceInterval: TimeInterval = 0.25
+    private var isNoResults = false
     
     // MARK: - View Life Cycle
     
@@ -88,6 +91,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         searchController.searchBar.delegate = self // Monitor when the search button is tapped.
         searchController.searchBar.placeholder = "photos from Imgur"
         definesPresentationContext = true
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(updateIsNoResultsTrue), name: .noResults, object: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -95,12 +100,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         super.viewWillAppear(animated)
         
         if self.tableView.numberOfRows(inSection: 0) > 0 {
+            self.updateMessageLabel(state: .hidden)
             //self.messageLabel.frame.size = CGSize(width: 0, height: 0)
-            self.messageLabel.removeFromSuperview()
+            //self.messageLabel.removeFromSuperview()
         } else {
             //self.messageLabel.frame.size = CGSize(width: 250, height: 250)
-            self.messageLabel.text = self.textForMessageLabel()
-            self.view.addSubview(self.messageLabel)
+            //self.messageLabel.text = self.textForMessageLabel()
+            self.updateMessageLabel(state: .instructions)
         }
         
         // Restore the searchController's active state.
@@ -150,10 +156,50 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     // MARK: - Messages
     
-    private func textForMessageLabel() -> String {
-        return """
-        Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title: ext: subreddit: album: meme:). An example compound query would be 'title: The Searchers OR album: John Wayne'
-        """
+    @objc func updateIsNoResultsTrue() {
+        DispatchQueue.main.async {
+            self.isNoResults = true
+            self.tableView.reloadData()
+        }
+    }
+    
+    private func updateMessageLabel(state: MessageLabelState) {
+        DispatchQueue.main.async {
+            switch state {
+            case .instructions:
+                self.messageLabel.frame.size.height = 200
+            case .loading:
+                self.messageLabel.frame.size.height = 100
+                self.spinner.frame = self.messageLabel.frame
+                self.messageLabel.addSubview(self.spinner)
+            case .noResults:
+                self.messageLabel.frame.size.height = 150
+            case .hidden:
+                self.messageLabel.frame.size.height = 0
+                //self.messageLabel.removeFromSuperview()
+            }
+            self.messageLabel.text = self.textForMessageLabel(state: state)
+            self.view.addSubview(self.messageLabel)
+        }
+    }
+    
+    private func textForMessageLabel(state: MessageLabelState) -> String {
+        switch state {
+        case .instructions:
+            return """
+            Feel free to search with operators (AND, OR, NOT) and indices (tag: user: title: ext: subreddit: album: meme:).
+            An example compound query would be 'title: The Searchers OR album: John Wayne'
+            """
+        case .loading:
+            return ""
+        case .noResults:
+            return """
+            No results.
+            You might want to widen your search with AND, OR, etc.
+            """
+        case .hidden:
+            return ""
+        }
     }
     
     // MARK: - Table View
@@ -164,7 +210,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let sectionInfo = fetchedResultsController.sections![section]
-        return sectionInfo.numberOfObjects
+        let rowCount = sectionInfo.numberOfObjects
+        var state: MessageLabelState = rowCount > 0 ? .hidden : .instructions
+        if self.isNoResults {
+            state = .noResults
+        }
+        self.updateMessageLabel(state: state)
+        return rowCount
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> ThumbnailTableViewCell {
@@ -183,24 +235,23 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return false
-        //return true
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            let context = fetchedResultsController.managedObjectContext
-            context.delete(fetchedResultsController.object(at: indexPath))
-            
-            do {
-                try context.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-            }
-        }
-    }
+//    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+//        if editingStyle == .delete {
+//            let context = fetchedResultsController.managedObjectContext
+//            context.delete(fetchedResultsController.object(at: indexPath))
+//
+//            do {
+//                try context.save()
+//            } catch {
+//                // Replace this implementation with code to handle the error appropriately.
+//                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+//                let nserror = error as NSError
+//                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+//            }
+//        }
+//    }
     
     func configureCell(_ cell: ThumbnailTableViewCell, withItem item: Item) {
         cell.titleLabel.text = item.title
@@ -253,6 +304,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                         self.tableView.reloadData()
                     }
                 }
+                self.isNoResults = false
                 ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: pageNumber)
             }
         }
@@ -342,7 +394,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        
+
         tableView.endUpdates()
     }
     
@@ -351,7 +403,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     private func controllerDidChangeContent(controller: NSFetchedResultsController<NSFetchRequestResult>) {
         // In the simplest, most efficient, case, reload the table view.
-        tableView.endUpdates()
+       // tableView.endUpdates()
         tableView.reloadData()
     }
     
@@ -368,6 +420,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         self._fetchedResultsController = nil
         self.tableView.reloadData()
         self.pageNumber = 0
+        self.isNoResults = false
         ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: 0)
     }
 }
@@ -421,105 +474,6 @@ extension MasterViewController: UISearchControllerDelegate {
     }
     
 }
-
-// MARK: - UISearchResultsUpdating
-
-//extension MasterViewController: UISearchResultsUpdating {
-
-//   private func findMatches(searchString: String) -> NSCompoundPredicate {
-//        /** Each searchString creates an OR predicate for: name, yearIntroduced, introPrice.
-//         Example if searchItems contains "Gladiolus 51.99 2001":
-//         name CONTAINS[c] "gladiolus"
-//         name CONTAINS[c] "gladiolus", yearIntroduced ==[c] 2001, introPrice ==[c] 51.99
-//         name CONTAINS[c] "ginger", yearIntroduced ==[c] 2007, introPrice ==[c] 49.98
-//         */
-//        var searchItemsPredicate = [NSPredicate]()
-//
-//        /** Below we use NSExpression represent expressions in our predicates.
-//         NSPredicate is made up of smaller, atomic parts:
-//         two NSExpressions (a left-hand value and a right-hand value).
-//         */
-//
-//        // Name field matching.
-//        let titleExpression = NSExpression(forKeyPath: ExpressionKeys.title.rawValue)
-//        let searchStringExpression = NSExpression(forConstantValue: searchString)
-//
-//        let titleSearchComparisonPredicate =
-//            NSComparisonPredicate(leftExpression: titleExpression,
-//                                  rightExpression: searchStringExpression,
-//                                  modifier: .direct,
-//                                  type: .contains,
-//                                  options: [.caseInsensitive, .diacriticInsensitive])
-//
-//        searchItemsPredicate.append(titleSearchComparisonPredicate)
-//
-//        let numberFormatter = NumberFormatter()
-//        numberFormatter.numberStyle = .none
-//        numberFormatter.formatterBehavior = .default
-//
-//        // The `searchString` may fail to convert to a number.
-//        if let targetNumber = numberFormatter.number(from: searchString) {
-//            // Use `targetNumberExpression` in both the following predicates.
-//            let targetNumberExpression = NSExpression(forConstantValue: targetNumber)
-//
-//            // The `yearIntroduced` field matching.
-//            let yearIntroducedExpression = NSExpression(forKeyPath: ExpressionKeys.yearIntroduced.rawValue)
-//            let yearIntroducedPredicate =
-//                NSComparisonPredicate(leftExpression: yearIntroducedExpression,
-//                                      rightExpression: targetNumberExpression,
-//                                      modifier: .direct,
-//                                      type: .equalTo,
-//                                      options: [.caseInsensitive, .diacriticInsensitive])
-//
-//            searchItemsPredicate.append(yearIntroducedPredicate)
-//
-//            // The `price` field matching.
-//            let lhs = NSExpression(forKeyPath: ExpressionKeys.introPrice.rawValue)
-//
-//            let finalPredicate =
-//                NSComparisonPredicate(leftExpression: lhs,
-//                                      rightExpression: targetNumberExpression,
-//                                      modifier: .direct,
-//                                      type: .equalTo,
-//                                      options: [.caseInsensitive, .diacriticInsensitive])
-//
-//            searchItemsPredicate.append(finalPredicate)
-//        }
-//
-//        let orMatchPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: searchItemsPredicate)
-//
-//        return orMatchPredicate
-//    }
-
-//    func updateSearchResults(for searchController: UISearchController) {
-// Update the filtered array based on the search text.
-//        let searchResults = products
-//
-//        // Strip out all the leading and trailing spaces.
-//        let whitespaceCharacterSet = CharacterSet.whitespaces
-//        let strippedString =
-//            searchController.searchBar.text!.trimmingCharacters(in: whitespaceCharacterSet)
-//        let searchItems = strippedString.components(separatedBy: " ") as [String]
-//
-//        // Build all the "AND" expressions for each value in searchString.
-//        let andMatchPredicates: [NSPredicate] = searchItems.map { searchString in
-//            findMatches(searchString: searchString)
-//        }
-//
-//        // Match up the fields of the Product object.
-//        let finalCompoundPredicate =
-//            NSCompoundPredicate(andPredicateWithSubpredicates: andMatchPredicates)
-//
-//        let filteredResults = searchResults.filter { finalCompoundPredicate.evaluate(with: $0) }
-//
-//        // Apply the filtered results to the search results table.
-//        if let resultsController = searchController.searchResultsController as? ResultsTableController {
-//            resultsController.filteredProducts = filteredResults
-//            resultsController.tableView.reloadData()
-//        }
-//    }
-
-//}
 
 // MARK: - UIStateRestoration
 

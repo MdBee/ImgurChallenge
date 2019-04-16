@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		BE1820EB2260023B008FBAE7 /* ThumbnailTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1820EA2260023B008FBAE7 /* ThumbnailTableViewCell.swift */; };
 		BE189478225ED34C00107E4D /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE189477225ED34C00107E4D /* CoreDataStack.swift */; };
+		BE1FF2B9226555B3003AD503 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE1FF2B8226555B3003AD503 /* Constants.swift */; };
 		BE3C802A225C1CCA0035C5BC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3C8029225C1CCA0035C5BC /* AppDelegate.swift */; };
 		BE3C802D225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BE3C802B225C1CCA0035C5BC /* ImgurChallenge.xcdatamodeld */; };
 		BE3C802F225C1CCA0035C5BC /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3C802E225C1CCA0035C5BC /* MasterViewController.swift */; };
@@ -41,6 +42,7 @@
 /* Begin PBXFileReference section */
 		BE1820EA2260023B008FBAE7 /* ThumbnailTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailTableViewCell.swift; sourceTree = "<group>"; };
 		BE189477225ED34C00107E4D /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
+		BE1FF2B8226555B3003AD503 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		BE3C8026225C1CCA0035C5BC /* ImgurChallenge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImgurChallenge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE3C8029225C1CCA0035C5BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BE3C802C225C1CCA0035C5BC /* ImgurChallenge.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ImgurChallenge.xcdatamodel; sourceTree = "<group>"; };
@@ -176,6 +178,7 @@
 			children = (
 				BE3C8035225C1CCB0035C5BC /* Assets.xcassets */,
 				BE3C8037225C1CCB0035C5BC /* LaunchScreen.storyboard */,
+				BE1FF2B8226555B3003AD503 /* Constants.swift */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -318,6 +321,7 @@
 				BE3C8031225C1CCA0035C5BC /* DetailViewController.swift in Sources */,
 				BE3C8064225D8CCC0035C5BC /* ImgurAPI.swift in Sources */,
 				BE189478225ED34C00107E4D /* CoreDataStack.swift in Sources */,
+				BE1FF2B9226555B3003AD503 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
