@@ -108,6 +108,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     // MARK: - Segues
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

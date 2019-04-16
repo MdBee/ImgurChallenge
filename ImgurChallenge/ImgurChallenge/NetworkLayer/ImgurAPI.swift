@@ -17,11 +17,14 @@ private let clientID = "Client-ID 126701cd8332f32"
 
 class ImgurAPI: NSObject {
     class var container : NSPersistentContainer? { return CoreDataStack.shared.container }
+    
     class func persistData(_ jsonArray: [[String: Any]], searchTerm: String) {
         
         // Make sure the search term used is still the current one.
         guard searchTerm == MasterViewController.searchTerm
-            else { debugPrint("searchTerm mismatch"); return }
+            else { self.postNoResultsNotification()
+                debugPrint("searchTerm mismatch")
+                return }
         
         // Because titles and nsfw (not safe for work) fields are more likely to be populated at the Gallery level in the JSON response we grab them here and use them with the photo if the photo does not specify a title and/or nsfw status.
         var galleryTitles = [String]()
@@ -35,7 +38,9 @@ class ImgurAPI: NSObject {
         
         guard galleryTitles.count == imageClusters.count,
             galleryNsfw.count == imageClusters.count
-            else { debugPrint("title or nsfw mismatch error"); return }
+            else { self.postNoResultsNotification()
+                debugPrint("title or nsfw mismatch error")
+                return }
         
         for (index, cluster) in imageClusters.enumerated() {
             let galleryTitle = galleryTitles[index]
@@ -90,24 +95,30 @@ class ImgurAPI: NSObject {
                         if let jsonArray = (responseObject as! [String: Any])["data"] as? [[String: Any]] {
                             debugPrint(jsonArray.count)
                             
-                            // No results.
                             if jsonArray.count == 0 {
-                                NotificationCenter.default.post(name: .noResults, object: self)
+                                self.postNoResultsNotification()
                                 debugPrint("Posted no results notification")
                             }
                             self.persistData(jsonArray, searchTerm: searchTerm)
                         }
                     } else {
+                        self.postNoResultsNotification()
                         debugPrint("Bad response error 1")
                     }
                 } else {
+                    self.postNoResultsNotification()
                     debugPrint("Error = " + String(describing: error))
                 }
             } catch {
+                self.postNoResultsNotification()
                 debugPrint("Bad response error 2")
                 debugPrint(error.localizedDescription)
             }
             }.resume()
+    }
+    
+    class func postNoResultsNotification() {
+        NotificationCenter.default.post(name: .noResults, object: self)
     }
 }
 
