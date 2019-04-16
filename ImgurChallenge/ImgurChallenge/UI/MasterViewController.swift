@@ -283,7 +283,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
         
         // Set the batch size to a suitable number.
-        fetchRequest.fetchBatchSize = 50
+        fetchRequest.fetchBatchSize = 20
         
         // Edit the sort key as appropriate.
         let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
@@ -297,7 +297,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         guard let context = container?.viewContext
             else { return NSFetchedResultsController() }
         context.undoManager = nil
-        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: "Master")
+        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
         aFetchedResultsController.delegate = self
         _fetchedResultsController = aFetchedResultsController
         
