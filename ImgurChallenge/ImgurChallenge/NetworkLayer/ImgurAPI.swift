@@ -10,7 +10,7 @@ import Foundation
 import CoreData
 
 enum Path {
-    static let Search = "https://api.imgur.com/3/gallery/search/time/"
+    static let GallerySearch = "https://api.imgur.com/3/gallery/search/time/"
 }
 
 private let clientID = "Client-ID 126701cd8332f32"
@@ -19,11 +19,9 @@ class ImgurAPI: NSObject {
     class var container : NSPersistentContainer? { return CoreDataStack.shared.container }
     class func persistData(_ jsonArray: [[String: Any]], searchTerm: String) {
         
-        debugPrint(jsonArray.count)
-        
         // Make sure the search term used is still the current one.
         guard searchTerm == MasterViewController.searchTerm
-            else { print("searchTerm mismatch"); return }
+            else { debugPrint("searchTerm mismatch"); return }
         
         // Because titles and nsfw (not safe for work) fields are more likely to be populated at the Gallery level in the JSON response we grab them here and use them with the photo if the photo does not specify a title and/or nsfw status.
         var galleryTitles = [String]()
@@ -34,8 +32,6 @@ class ImgurAPI: NSObject {
         })
         
         let imageClusters = jsonArray.map({ $0["images"] })
-        
-        debugPrint(imageClusters.count)
         
         guard galleryTitles.count == imageClusters.count,
             galleryNsfw.count == imageClusters.count
@@ -63,7 +59,7 @@ class ImgurAPI: NSObject {
             else { return }
         guard link != ""
             else {return }
-        
+        context.undoManager = nil
         let newItem = Item(context: context)
         
         newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
@@ -79,8 +75,8 @@ class ImgurAPI: NSObject {
     
     class func fetchFor(searchTerm: String = "", pageNumber: Int = 0) {
         guard let escapedSearchTerm = searchTerm.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-            let url = URL(string: Path.Search + "\(pageNumber)" + "?q=" + escapedSearchTerm)
-            else { print("Bad URL error."); return }
+            let url = URL(string: Path.GallerySearch + "\(pageNumber)" + "?q=" + escapedSearchTerm)
+            else { debugPrint("Bad URL error."); return }
         let request = NSMutableURLRequest(url: url)
         
         request.setValue(clientID, forHTTPHeaderField: "Authorization")

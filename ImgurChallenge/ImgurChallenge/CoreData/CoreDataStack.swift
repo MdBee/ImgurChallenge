@@ -40,12 +40,9 @@ class CoreDataStack: NSObject {
     // MARK: - Core Data Saving support
     
     func saveContext () {
-//        let context = persistentContainer.viewContext
         guard let context = self.container?.viewContext
-            else { print("CoreDataStack error 1")
-                return
-                    }
-        
+            else { debugPrint("CoreDataStack error 1"); return }
+        context.undoManager = nil
         if context.hasChanges {
             do {
                 try context.save()
@@ -58,23 +55,21 @@ class CoreDataStack: NSObject {
         }
     }
     
+    // MARK: - Core Data Deletion support
     
     func deleteAll(entityName: String) {
-        
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         deleteRequest.resultType = .resultTypeObjectIDs
         guard let context = self.container?.viewContext
-            else { print("error in deleteAll")
-                return }
-        
+            else { debugPrint("error in deleteAll"); return }
         do {
             let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
             let objectIDArray = result?.result as? [NSManagedObjectID]
             let changes: [AnyHashable : Any] = [NSDeletedObjectsKey : objectIDArray as Any]
             NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
         } catch {
-            print(error.localizedDescription)
+            debugPrint(error.localizedDescription)
         }
     }
 }

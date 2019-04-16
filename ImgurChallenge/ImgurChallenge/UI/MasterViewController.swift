@@ -292,7 +292,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
         guard let context = container?.viewContext
             else { return NSFetchedResultsController() }
-        
+        context.undoManager = nil
         let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: "Master")
         aFetchedResultsController.delegate = self
         _fetchedResultsController = aFetchedResultsController
