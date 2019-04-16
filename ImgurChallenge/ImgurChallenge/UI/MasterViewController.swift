@@ -198,7 +198,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         configureCell(cell as! ThumbnailTableViewCell, withItem: item)
         
         // When the last cell is set up...
-        if indexPath.row + 1 == _fetchedResultsController?.fetchedObjects?.count {
+        if indexPath.row + 1 == _fetchedResultsController?.fetchedObjects?.count && !isNoResults {
             self.pageNumber += 1
             self.debouncedNetworkFetch(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
             debugPrint("Next page fetch for pageNumber = " + self.pageNumber.description)
@@ -235,7 +235,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                             item.thumbnailData = imageData
                             // Refault it so it will be refreshed the next time it is accessed.
                             // Safer but slows segue to Detail view.
-                            //item.managedObjectContext?.refresh(item, mergeChanges: true)
+                            item.managedObjectContext?.refresh(item, mergeChanges: true)
                         }
                     } catch {
                         DispatchQueue.main.async {
@@ -341,6 +341,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                 else { debugPrint("indexPath out of visible."); return }
             configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
         case .move:
+            guard self.tableView.indexPathsForVisibleRows?.contains(indexPath ?? IndexPath()) ?? false
+                else { debugPrint("indexPath out of visible."); return }
             configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
             tableView.moveRow(at: indexPath!, to: newIndexPath!)
         }
