@@ -339,6 +339,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         case .update:
             guard self.tableView.indexPathsForVisibleRows?.contains(indexPath ?? IndexPath()) ?? false
                 else { debugPrint("indexPath out of visible."); return }
+            guard tableView.cellForRow(at: indexPath!) != nil
+                else { debugPrint("cell is nil."); return }
             configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
         case .move:
             guard self.tableView.indexPathsForVisibleRows?.contains(indexPath ?? IndexPath()) ?? false
