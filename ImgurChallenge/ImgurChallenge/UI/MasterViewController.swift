@@ -234,7 +234,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                             // Update Item with imageData.
                             item.thumbnailData = imageData
                             // Refault it so it will be refreshed the next time it is accessed.
-                            item.managedObjectContext?.refresh(item, mergeChanges: true)
+                            // Safer but slows segue to Detail view.
+                            //item.managedObjectContext?.refresh(item, mergeChanges: true)
                         }
                     } catch {
                         DispatchQueue.main.async {

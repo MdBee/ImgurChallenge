@@ -17,14 +17,13 @@ class DetailViewController: UIViewController {
     func configureView() {
         if let detail = detailItem {
             self.title = detail.title
-            self.activityIndicator?.isHidden = false
             
             if detail.imageData != nil {
                 self.imageView?.image = UIImage(data: detail.imageData!)
                 self.activityIndicator?.isHidden = true
             } else {
                 guard let link = detail.imageLink
-                    else { print("no image link"); return}
+                    else { debugPrint("no image link"); return}
                 if let imgURL = URL.init(string: link) {
                     do {
                         let imageData = try Data(contentsOf: imgURL as URL);
@@ -40,7 +39,7 @@ class DetailViewController: UIViewController {
                         }
                     } catch {
                         self.activityIndicator?.isHidden = true
-                        print("Unable to load data: \(error)")
+                        debugPrint("Unable to load data: \(error)")
                     }
                 }
             }
@@ -50,11 +49,14 @@ class DetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.scrollView.delegate = self
+        self.activityIndicator?.isHidden = true
         configureView()
     }
     
     var detailItem: Item? {
         didSet {
+            self.activityIndicator?.isHidden = false
+            self.view.bringSubviewToFront(self.activityIndicator)
             configureView()
         }
     }
