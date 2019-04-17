@@ -9,8 +9,7 @@
 import UIKit
 import CoreData
 
-//class MasterViewController: UITableViewController {
-class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
+class MasterViewController: UITableViewController {
     
     // MARK: - Types
     private enum MessageLabelState: String {
@@ -301,7 +300,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             if self.lastEntryTime + self.debounceInterval <= Date() {
                 if pageNumber == 0 {
                     CoreDataStack.shared.deleteAll(entityName: "Item")
-                    //dataProvider.fetchedResultsController = nil
+                    //self.fetchedResultsController = nil
                     DispatchQueue.main.async {
                         self.tableView.reloadData()
                     }
@@ -456,7 +455,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         //let context = container.viewContext
         //context.undoManager = nil
         let controller = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: container.viewContext, sectionNameKeyPath: nil, cacheName: nil)
-        controller.delegate = self
+        //controller.delegate = self
         //_fetchedResultsController = aFetchedResultsController
         
         do {
@@ -468,14 +467,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
         }
         return controller
-    }
-
-//}
-
-// MARK: - NSFetchedResultsControllerDelegate
-
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        self.tableView.reloadData()
     }
 }
 
