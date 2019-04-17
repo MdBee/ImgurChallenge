@@ -12,7 +12,7 @@ import CoreData
 class MasterViewController: UITableViewController {
     
     // MARK: - Types
-    private enum MessageLabelState: String {
+    enum MessageLabelState: String {
         case instructions
         case loading
         case noResults
@@ -160,7 +160,7 @@ class MasterViewController: UITableViewController {
         }
     }
     
-    private func textForMessageLabel(state: MessageLabelState) -> String {
+    func textForMessageLabel(state: MessageLabelState) -> String {
         switch state {
         case .instructions:
             return """
