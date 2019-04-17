@@ -10,4 +10,5 @@ import Foundation
 
 extension Notification.Name {
     static let noResults = Notification.Name("noResults")
+    static let dataFetchFinished = Notification.Name("dataFetchFinished")
 }

@@ -93,6 +93,8 @@ class ImgurAPI: NSObject {
                 return
             }
         }
+    
+        self.postFinishedNotification()
        // CoreDataStack.shared.saveContext()
     }
     
@@ -140,7 +142,7 @@ class ImgurAPI: NSObject {
             }
             
             // Save all insertions and deletions from the context to the store.
-            if taskContext.hasChanges {
+           // if taskContext.hasChanges {
                 do {
                     try taskContext.save()
                 } catch {
@@ -149,7 +151,7 @@ class ImgurAPI: NSObject {
                 }
                 // Reset the taskContext to free the cache and lower the memory footprint.
                 taskContext.reset()
-            }
+          // }
             
             success = true
         }
@@ -219,6 +221,9 @@ class ImgurAPI: NSObject {
         NotificationCenter.default.post(name: .noResults, object: self)
     }
     
+    func postFinishedNotification() {
+        NotificationCenter.default.post(name: .dataFetchFinished, object: self)
+    }
     
 //    // MARK: - Fetched results controller
 //    

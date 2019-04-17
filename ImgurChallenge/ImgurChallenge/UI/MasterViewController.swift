@@ -9,8 +9,8 @@
 import UIKit
 import CoreData
 
-class MasterViewController: UITableViewController {
-//class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
+//class MasterViewController: UITableViewController {
+class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
     // MARK: - Types
     private enum MessageLabelState: String {
@@ -38,7 +38,7 @@ class MasterViewController: UITableViewController {
     private var searchController: UISearchController!
     private var restoredState = SearchControllerRestorableState()
     var detailViewController: DetailViewController? = nil
-    var managedObjectContext: NSManagedObjectContext? = nil
+    //var managedObjectContext: NSManagedObjectContext? = nil
     var container : NSPersistentContainer { return CoreDataStack.shared.persistentContainer }
     static var searchTerm: String = ""
     static var isFilteringOutNsfw: Bool = true
@@ -87,8 +87,9 @@ class MasterViewController: UITableViewController {
         definesPresentationContext = true
         
         NotificationCenter.default.addObserver(self, selector: #selector(updateIsNoResultsTrue), name: .noResults, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateForFinishedFetch), name: .dataFetchFinished, object: nil)
         
-        self.fetchedResultsControllerDelegate = self
+        //self.fetchedResultsControllerDelegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -189,6 +190,10 @@ class MasterViewController: UITableViewController {
     }
     
     // MARK: - Table View
+    
+    @objc func updateForFinishedFetch() {
+         self.tableView.reloadData()
+    }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return self.fetchedResultsController.sections?.count ?? 1
@@ -427,7 +432,7 @@ class MasterViewController: UITableViewController {
     // MARK: - Fetched results controller
     
     
-    weak var fetchedResultsControllerDelegate: NSFetchedResultsControllerDelegate?
+    //weak var fetchedResultsControllerDelegate: NSFetchedResultsControllerDelegate?
     
     var fetchedResultsController: NSFetchedResultsController<Item> {
         //        if _fetchedResultsController != nil {
@@ -451,7 +456,7 @@ class MasterViewController: UITableViewController {
         //let context = container.viewContext
         //context.undoManager = nil
         let controller = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: container.viewContext, sectionNameKeyPath: nil, cacheName: nil)
-        controller.delegate = fetchedResultsControllerDelegate
+        controller.delegate = self
         //_fetchedResultsController = aFetchedResultsController
         
         do {
@@ -465,14 +470,12 @@ class MasterViewController: UITableViewController {
         return controller
     }
 
-}
+//}
 
 // MARK: - NSFetchedResultsControllerDelegate
 
-extension MasterViewController: NSFetchedResultsControllerDelegate {
-
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        tableView.reloadData()
+        self.tableView.reloadData()
     }
 }
 
