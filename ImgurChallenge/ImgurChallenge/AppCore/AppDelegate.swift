@@ -20,12 +20,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
         navigationController.topViewController!.navigationItem.leftBarButtonItem = splitViewController.displayModeButtonItem
         splitViewController.delegate = self
 
-       // let masterNavigationController = splitViewController.viewControllers[0] as! UINavigationController
-
-//        CoreDataStack.shared.loadStore {
-//            let controller = masterNavigationController.topViewController as! MasterViewController
-//            controller.managedObjectContext = CoreDataStack.shared.container.viewContext
-//        }
         return true
     }
 

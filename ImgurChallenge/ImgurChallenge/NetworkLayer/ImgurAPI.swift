@@ -54,7 +54,6 @@ class ImgurAPI: NSObject {
                 mutableItem["galleryTitle"] = galleryTitle
                 mutableItem["galleryNsfw"] = isNsfw
                 rawItems.append(mutableItem)
-                //self.configureManagedObject(mutableItem)
             }
         }
         
@@ -66,9 +65,6 @@ class ImgurAPI: NSObject {
         // Create a private queue context.
         let taskContext = self.container.newBackgroundContext()
         taskContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        // Set unused undoManager to nil for macOS (it is nil by default on iOS)
-        // to reduce resource requirements.
-        taskContext.undoManager = nil // Just in case the default has changed for iOS.
         
         // Process records in batches to avoid a high memory footprint.
         let batchSize = 64
@@ -95,7 +91,6 @@ class ImgurAPI: NSObject {
         }
     
         self.postFinishedNotification()
-       // CoreDataStack.shared.saveContext()
     }
     
     func importOneBatch(_ itemsBatch: [[String : Any]], taskContext: NSManagedObjectContext) -> Bool {
@@ -107,18 +102,10 @@ class ImgurAPI: NSObject {
         taskContext.performAndWait {
             // Create a new record for each item in the batch.
             for rawItem in itemsBatch {
-                
-                // Create an Item managed object on the private queue context.
-                //guard let newItem = NSEntityDescription.insertNewObject(forEntityName: "Item", into: taskContext) as? Item
-                //    else { debugPrint("Error creating newItem"); return }
-                
-                // Populate the Item's properties using the raw data.
                 guard let link = rawItem["link"] as? String,
                     link != ""
                     else { return }
-//                guard link != ""
-//                    else {return }
-//                context.undoManager = nil
+                
                 let newItem = Item(context: taskContext)
                 
                 newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
@@ -130,53 +117,21 @@ class ImgurAPI: NSObject {
                 let suffix = (link as NSString).pathExtension
                 newItem.thumbnailLink = (link as NSString).deletingPathExtension + "t." + suffix
                 newItem.thumbnailData = nil
-//                do {
-//                    try quake.update(with: quakeData)
-//                } catch QuakeError.missingData {
-//                    // Delete invalid Quake from the private queue context.
-//                    print(QuakeError.missingData.localizedDescription)
-//                    taskContext.delete(quake)
-//                } catch {
-//                    print(error.localizedDescription)
-//                }
             }
             
-            // Save all insertions and deletions from the context to the store.
-           // if taskContext.hasChanges {
-                do {
-                    try taskContext.save()
-                } catch {
-                    debugPrint("Error: \(error)\nCould not save Core Data context.")
-                    return
-                }
-                // Reset the taskContext to free the cache and lower the memory footprint.
-                taskContext.reset()
-          // }
+            do {
+                try taskContext.save()
+            } catch {
+                debugPrint("Error: \(error)\nCould not save Core Data context.")
+                return
+            }
+            // Reset the taskContext to free the cache and lower the memory footprint.
+            taskContext.reset()
             
             success = true
         }
         return success
     }
-    
- //   class func configureManagedObject(_ rawItem: [String: Any]) {
-//        guard let context = self.container?.viewContext,
-//            let link = rawItem["link"] as? String
-//            else { return }
-//        guard link != ""
-//            else {return }
-//        context.undoManager = nil
-//        let newItem = Item(context: context)
-//
-//        newItem.dateTime = Date(timeIntervalSince1970: rawItem["datetime"] as? TimeInterval ?? 0)
-//        newItem.title = rawItem["title"] as? String ?? (rawItem["galleryTitle"] as? String ?? "no title")
-//        newItem.nsfw = rawItem["nsfw"] as? Bool ?? (rawItem["galleryNsfw"] as? Bool ?? false)
-//        newItem.imageLink = link
-//        newItem.imageData = nil
-//
-//        let suffix = (link as NSString).pathExtension
-//        newItem.thumbnailLink = (link as NSString).deletingPathExtension + "t." + suffix
-//        newItem.thumbnailData = nil
- //   }
     
     func fetchFor(searchTerm: String = "", pageNumber: Int = 0) {
         guard let escapedSearchTerm = searchTerm.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
@@ -224,47 +179,5 @@ class ImgurAPI: NSObject {
     func postFinishedNotification() {
         NotificationCenter.default.post(name: .dataFetchFinished, object: self)
     }
-    
-//    // MARK: - Fetched results controller
-//    
-//    
-//    weak var fetchedResultsControllerDelegate: NSFetchedResultsControllerDelegate?
-//    
-//    var fetchedResultsController: NSFetchedResultsController<Item> {
-////        if _fetchedResultsController != nil {
-////            return _fetchedResultsController!
-////        }
-//        
-//        let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
-//        
-//        // Set the batch size to a suitable number.
-//        fetchRequest.fetchBatchSize = 20
-//        
-//        // Edit the sort key as appropriate.
-//        let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
-//        fetchRequest.sortDescriptors = [sortDescriptor]
-//        
-//        if MasterViewController.isFilteringOutNsfw {
-//            let predicate = NSPredicate(format: "nsfw == %d", Bool(false))
-//            fetchRequest.predicate = predicate
-//        }
-//        
-//        //let context = container.viewContext
-//        //context.undoManager = nil
-//        let controller = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: container.viewContext, sectionNameKeyPath: nil, cacheName: nil)
-//        controller.delegate = fetchedResultsControllerDelegate
-//        //_fetchedResultsController = aFetchedResultsController
-//        
-//        do {
-//            try controller.performFetch()
-//        } catch {
-//            // Replace this implementation with code to handle the error appropriately.
-//            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-//            let nserror = error as NSError
-//            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-//        }
-//        return controller
-//    }
-    
 }
 
