@@ -12,14 +12,14 @@ import CoreData
 class CoreDataStack: NSObject {
     
     static let shared = CoreDataStack()
-    var container: NSPersistentContainer?
+    var container: NSPersistentContainer
     
     private override init() {
         container = NSPersistentContainer(name: "ImgurChallenge")
     }
     
     func loadStore(completionHandler: @escaping () -> ()) {
-        self.container?.loadPersistentStores(completionHandler: { (storeDescription, error) in
+        self.container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
@@ -35,14 +35,19 @@ class CoreDataStack: NSObject {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         })
+        
+        // Merge the changes from other contexts automatically.
+        self.container.viewContext.automaticallyMergesChangesFromParent = true
+        self.container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        self.container.viewContext.undoManager = nil
+        self.container.viewContext.shouldDeleteInaccessibleFaults = true
     }
     
     // MARK: - Core Data Saving support
     
     func saveContext () {
-        guard let context = self.container?.viewContext
-            else { debugPrint("CoreDataStack error 1"); return }
-        context.undoManager = nil
+        let context = self.container.viewContext
+
         if context.hasChanges {
             do {
                 try context.save()
@@ -61,8 +66,8 @@ class CoreDataStack: NSObject {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         deleteRequest.resultType = .resultTypeObjectIDs
-        guard let context = self.container?.viewContext
-            else { debugPrint("error in deleteAll"); return }
+        let context = self.container.viewContext
+
         do {
             let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
             let objectIDArray = result?.result as? [NSManagedObjectID]

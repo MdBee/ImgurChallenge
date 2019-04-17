@@ -9,7 +9,8 @@
 import UIKit
 import CoreData
 
-class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
+class MasterViewController: UITableViewController {
+//class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
     // MARK: - Types
     private enum MessageLabelState: String {
@@ -38,13 +39,19 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     private var restoredState = SearchControllerRestorableState()
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
-    var container : NSPersistentContainer? { return CoreDataStack.shared.container }
+    var container : NSPersistentContainer { return CoreDataStack.shared.container }
     static var searchTerm: String = ""
-    private var isFilteringOutNsfw = true
+    static var isFilteringOutNsfw: Bool = true
     private var pageNumber: Int = 0
     private var lastEntryTime: Date = Date()
     private let debounceInterval: TimeInterval = 0.25
     private var isNoResults = false
+    private lazy var dataProvider: ImgurAPI = {
+        let provider = ImgurAPI()
+        provider.fetchedResultsControllerDelegate = self
+        return provider
+    }()
+    
     // MARK: - Outlets
     @IBOutlet weak var nsfwButton: UIBarButtonItem!
     @IBOutlet weak var messageLabel: UILabel!
@@ -117,7 +124,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             if let indexPath = tableView.indexPathForSelectedRow {
-                let object = fetchedResultsController.object(at: indexPath)
+                let object = dataProvider.fetchedResultsController.object(at: indexPath)
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
                 controller.detailItem = object
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
@@ -182,11 +189,11 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     // MARK: - Table View
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return fetchedResultsController.sections?.count ?? 1
+        return dataProvider.fetchedResultsController.sections?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sectionInfo = fetchedResultsController.sections![section]
+        let sectionInfo = dataProvider.fetchedResultsController.sections![section]
         let rowCount = sectionInfo.numberOfObjects
         
         var state: MessageLabelState = .loading
@@ -204,11 +211,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> ThumbnailTableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        let item = fetchedResultsController.object(at: indexPath)
+        //let item = fetchedResultsController.object(at: indexPath)
+        guard let item = dataProvider.fetchedResultsController.fetchedObjects?[indexPath.row]
+            else { return cell as! ThumbnailTableViewCell }
         configureCell(cell as! ThumbnailTableViewCell, withItem: item)
         
         // When the last cell is set up...
-        if indexPath.row + 1 == _fetchedResultsController?.fetchedObjects?.count && !isNoResults {
+        if indexPath.row + 1 == dataProvider.fetchedResultsController.fetchedObjects?.count && !isNoResults {
             self.pageNumber += 1
             self.debouncedNetworkFetch(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
             debugPrint("Next page fetch for pageNumber = " + self.pageNumber.description)
@@ -258,6 +267,24 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
     }
     
+    // MARK: - Button Action
+    
+    @IBAction func nsfwButtonTap(_ sender: UIBarButtonItem) {
+        MasterViewController.isFilteringOutNsfw = !MasterViewController.isFilteringOutNsfw
+        self.nsfwButton.title = MasterViewController.isFilteringOutNsfw ? "nsfw is filtered out" : "NSFW is allowed"
+        self.nsfwButton.tintColor = MasterViewController.isFilteringOutNsfw ? UIColor.orange : UIColor.red
+        
+        // Clear data based on old setting and perform same search with new setting.
+        CoreDataStack.shared.deleteAll(entityName: "Item")
+        //self._fetchedResultsController = nil
+        self.tableView.reloadData()
+        self.pageNumber = 0
+        self.isNoResults = false
+        self.updateMessageLabel(state: .loading)
+        //ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: 0)
+        self.fetchItems(searchTerm: MasterViewController.searchTerm, pageNumber: 0)
+    }
+    
     // MARK: - Network Calls
     
     func debouncedNetworkFetch(searchTerm: String, pageNumber: Int = 0) {
@@ -267,127 +294,146 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             if self.lastEntryTime + self.debounceInterval <= Date() {
                 if pageNumber == 0 {
                     CoreDataStack.shared.deleteAll(entityName: "Item")
-                    self._fetchedResultsController = nil
+                    //dataProvider.fetchedResultsController = nil
                     DispatchQueue.main.async {
                         self.tableView.reloadData()
                     }
                 }
                 self.isNoResults = false
                 self.updateMessageLabel(state: .loading)
-                ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: pageNumber)
+                //ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: pageNumber)
+                self.fetchItems(searchTerm: MasterViewController.searchTerm, pageNumber: pageNumber)
+                
             }
         }
     }
     
-    // MARK: - Fetched results controller
-    
-    var fetchedResultsController: NSFetchedResultsController<Item> {
-        if _fetchedResultsController != nil {
-            return _fetchedResultsController!
-        }
-        
-        let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
-        
-        // Set the batch size to a suitable number.
-        fetchRequest.fetchBatchSize = 20
-        
-        // Edit the sort key as appropriate.
-        let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
-        fetchRequest.sortDescriptors = [sortDescriptor]
-        
-        if isFilteringOutNsfw {
-            let predicate = NSPredicate(format: "nsfw == %d", Bool(false))
-            fetchRequest.predicate = predicate
-        }
-        
-        guard let context = container?.viewContext
-            else { return NSFetchedResultsController() }
-        context.undoManager = nil
-        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
-        aFetchedResultsController.delegate = self
-        _fetchedResultsController = aFetchedResultsController
-        
-        do {
-            try _fetchedResultsController!.performFetch()
-        } catch {
-            // Replace this implementation with code to handle the error appropriately.
-            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            let nserror = error as NSError
-            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-        }
-        return _fetchedResultsController!
-    }
-    
-    var _fetchedResultsController: NSFetchedResultsController<Item>? = nil
-    
-    
-    // MARK: - Fetched results controller updates
-    
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        tableView.beginUpdates()
-    }
+    func fetchItems(searchTerm: String = "", pageNumber: Int = 0) {
 
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
-        switch type {
-        case .insert:
-            tableView.insertSections(IndexSet(integer: sectionIndex), with: .fade)
-        case .delete:
-            tableView.deleteSections(IndexSet(integer: sectionIndex), with: .fade)
-        default:
-            return
-        }
-    }
+       // spinner.startAnimating()
 
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        switch type {
-        case .insert:
-            tableView.insertRows(at: [newIndexPath!], with: .fade)
-        case .delete:
-            guard indexPath != nil
-                else { debugPrint("nil indexPath"); return }
-            tableView.deleteRows(at: [indexPath!], with: .fade)
-        case .update:
-            guard self.tableView.indexPathsForVisibleRows?.contains(indexPath ?? IndexPath()) ?? false
-                else { debugPrint("indexPath out of visible."); return }
-            guard tableView.cellForRow(at: indexPath!) != nil
-                else { debugPrint("cell is nil."); return }
-            configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
-        case .move:
-            guard self.tableView.indexPathsForVisibleRows?.contains(indexPath ?? IndexPath()) ?? false
-                else { debugPrint("indexPath out of visible."); return }
-            configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
-            tableView.moveRow(at: indexPath!, to: newIndexPath!)
-        }
+        dataProvider.fetchFor(searchTerm: searchTerm, pageNumber: pageNumber)
+        //{ error in
+         //   DispatchQueue.main.async {
+                
+                //self.spinner.stopAnimating()
+                
+                // Show an alert if there was an error.
+//                guard let error = error else { return }
+//                let alert = UIAlertController(title: "Fetch quakes error!",
+//                                              message: error.localizedDescription,
+//                                              preferredStyle: .alert)
+//                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+//                self.present(alert, animated: true, completion: nil)
+           // }
+      //  }
     }
+    
+//    // MARK: - Fetched results controller
+//    
+//
+//    
+//    var fetchedResultsController: NSFetchedResultsController<Item> {
+//        if _fetchedResultsController != nil {
+//            return _fetchedResultsController!
+//        }
+//        
+//        let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
+//        
+//        // Set the batch size to a suitable number.
+//        fetchRequest.fetchBatchSize = 20
+//        
+//        // Edit the sort key as appropriate.
+//        let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
+//        fetchRequest.sortDescriptors = [sortDescriptor]
+//        
+//        if isFilteringOutNsfw {
+//            let predicate = NSPredicate(format: "nsfw == %d", Bool(false))
+//            fetchRequest.predicate = predicate
+//        }
+//        
+//        let context = container.viewContext
+//        context.undoManager = nil
+//        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+//        aFetchedResultsController.delegate = fetchedResultsControllerDelegate //self
+//        _fetchedResultsController = aFetchedResultsController
+//        
+//        do {
+//            try _fetchedResultsController!.performFetch()
+//        } catch {
+//            // Replace this implementation with code to handle the error appropriately.
+//            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+//            let nserror = error as NSError
+//            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+//        }
+//        return _fetchedResultsController!
+//    }
+//    
+//    var _fetchedResultsController: NSFetchedResultsController<Item>? = nil
+//    
+//    
+//    // MARK: - Fetched results controller updates
+//    
+//    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        tableView.beginUpdates()
+//    }
+//
+//    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
+//        switch type {
+//        case .insert:
+//            tableView.insertSections(IndexSet(integer: sectionIndex), with: .fade)
+//        case .delete:
+//            tableView.deleteSections(IndexSet(integer: sectionIndex), with: .fade)
+//        default:
+//            return
+//        }
+//    }
+//
+//    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+//        switch type {
+//        case .insert:
+//            tableView.insertRows(at: [newIndexPath!], with: .fade)
+//        case .delete:
+//            guard indexPath != nil
+//                else { debugPrint("nil indexPath"); return }
+//            tableView.deleteRows(at: [indexPath!], with: .fade)
+//        case .update:
+//            guard self.tableView.indexPathsForVisibleRows?.contains(indexPath ?? IndexPath()) ?? false
+//                else { debugPrint("indexPath out of visible."); return }
+//            guard tableView.cellForRow(at: indexPath!) != nil
+//                else { debugPrint("cell is nil."); return }
+//            configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
+//        case .move:
+//            guard self.tableView.indexPathsForVisibleRows?.contains(indexPath ?? IndexPath()) ?? false
+//                else { debugPrint("indexPath out of visible."); return }
+//            configureCell(tableView.cellForRow(at: indexPath!) as! ThumbnailTableViewCell, withItem: anObject as! Item)
+//            tableView.moveRow(at: indexPath!, to: newIndexPath!)
+//        }
+//    }
+//
+//    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        tableView.endUpdates()
+//    }
+//    
+//    // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
+//    private func controllerDidChangeContent(controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        // In the simplest, most efficient, case, reload the table view.
+//        tableView.reloadData()
+//    }
+//    
+    
+
+}
+
+// MARK: - NSFetchedResultsControllerDelegate
+
+extension MasterViewController: NSFetchedResultsControllerDelegate {
 
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        tableView.endUpdates()
-    }
-    
-    // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
-    private func controllerDidChangeContent(controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        // In the simplest, most efficient, case, reload the table view.
         tableView.reloadData()
     }
-    
-    
-    // MARK: - Button Action
-    
-    @IBAction func nsfwButtonTap(_ sender: UIBarButtonItem) {
-        self.isFilteringOutNsfw = !self.isFilteringOutNsfw
-        self.nsfwButton.title = self.isFilteringOutNsfw ? "nsfw is filtered out" : "NSFW is allowed"
-        self.nsfwButton.tintColor = self.isFilteringOutNsfw ? UIColor.orange : UIColor.red
-        
-        // Clear data based on old setting and perform same search with new setting.
-        CoreDataStack.shared.deleteAll(entityName: "Item")
-        self._fetchedResultsController = nil
-        self.tableView.reloadData()
-        self.pageNumber = 0
-        self.isNoResults = false
-        self.updateMessageLabel(state: .loading)
-        ImgurAPI.fetchFor(searchTerm: MasterViewController.searchTerm, pageNumber: 0)
-    }
 }
+
 
 // MARK: - UISearchBarDelegate
 

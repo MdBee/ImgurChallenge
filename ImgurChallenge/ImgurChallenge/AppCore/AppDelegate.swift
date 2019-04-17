@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 
         CoreDataStack.shared.loadStore {
             let controller = masterNavigationController.topViewController as! MasterViewController
-            controller.managedObjectContext = CoreDataStack.shared.container?.viewContext
+            controller.managedObjectContext = CoreDataStack.shared.container.viewContext
         }
         return true
     }
