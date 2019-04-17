@@ -126,7 +126,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
     }
     
-    // MARK: - Messages
+    // MARK: - Message Label Handling
     
     @objc func updateIsNoResultsTrue() {
         DispatchQueue.main.async {
@@ -188,11 +188,17 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let sectionInfo = fetchedResultsController.sections![section]
         let rowCount = sectionInfo.numberOfObjects
-        var state: MessageLabelState = rowCount > 0 ? .hidden : .instructions
-        if self.isNoResults {
+        
+        var state: MessageLabelState = .loading
+        if rowCount > 0 {
+            state = .hidden
+        } else if self.isNoResults {
             state = .noResults
+        } else {
+            state = .instructions
         }
         self.updateMessageLabel(state: state)
+        
         return rowCount
     }
     
@@ -320,7 +326,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.beginUpdates()
     }
-    
+
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
         switch type {
         case .insert:
@@ -331,7 +337,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             return
         }
     }
-    
+
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
         case .insert:
@@ -353,7 +359,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             tableView.moveRow(at: indexPath!, to: newIndexPath!)
         }
     }
-    
+
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.endUpdates()
     }
