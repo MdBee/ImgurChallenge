@@ -39,7 +39,7 @@ class MasterViewController: UITableViewController {
     private var restoredState = SearchControllerRestorableState()
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
-    var container : NSPersistentContainer { return CoreDataStack.shared.container }
+    var container : NSPersistentContainer { return CoreDataStack.shared.persistentContainer }
     static var searchTerm: String = ""
     static var isFilteringOutNsfw: Bool = true
     private var pageNumber: Int = 0
@@ -48,7 +48,7 @@ class MasterViewController: UITableViewController {
     private var isNoResults = false
     private lazy var dataProvider: ImgurAPI = {
         let provider = ImgurAPI()
-        provider.fetchedResultsControllerDelegate = self
+        //provider.fetchedResultsControllerDelegate = self
         return provider
     }()
     
@@ -87,6 +87,8 @@ class MasterViewController: UITableViewController {
         definesPresentationContext = true
         
         NotificationCenter.default.addObserver(self, selector: #selector(updateIsNoResultsTrue), name: .noResults, object: nil)
+        
+        self.fetchedResultsControllerDelegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -124,7 +126,7 @@ class MasterViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             if let indexPath = tableView.indexPathForSelectedRow {
-                let object = dataProvider.fetchedResultsController.object(at: indexPath)
+                let object = self.fetchedResultsController.object(at: indexPath)
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
                 controller.detailItem = object
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
@@ -189,11 +191,11 @@ class MasterViewController: UITableViewController {
     // MARK: - Table View
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return dataProvider.fetchedResultsController.sections?.count ?? 1
+        return self.fetchedResultsController.sections?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sectionInfo = dataProvider.fetchedResultsController.sections![section]
+        let sectionInfo = self.fetchedResultsController.sections![section]
         let rowCount = sectionInfo.numberOfObjects
         
         var state: MessageLabelState = .loading
@@ -212,12 +214,12 @@ class MasterViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> ThumbnailTableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         //let item = fetchedResultsController.object(at: indexPath)
-        guard let item = dataProvider.fetchedResultsController.fetchedObjects?[indexPath.row]
+        guard let item = self.fetchedResultsController.fetchedObjects?[indexPath.row]
             else { return cell as! ThumbnailTableViewCell }
         configureCell(cell as! ThumbnailTableViewCell, withItem: item)
         
         // When the last cell is set up...
-        if indexPath.row + 1 == dataProvider.fetchedResultsController.fetchedObjects?.count && !isNoResults {
+        if indexPath.row + 1 == self.fetchedResultsController.fetchedObjects?.count && !isNoResults {
             self.pageNumber += 1
             self.debouncedNetworkFetch(searchTerm: MasterViewController.searchTerm, pageNumber: self.pageNumber)
             debugPrint("Next page fetch for pageNumber = " + self.pageNumber.description)
@@ -422,6 +424,46 @@ class MasterViewController: UITableViewController {
 //    }
 //    
     
+    // MARK: - Fetched results controller
+    
+    
+    weak var fetchedResultsControllerDelegate: NSFetchedResultsControllerDelegate?
+    
+    var fetchedResultsController: NSFetchedResultsController<Item> {
+        //        if _fetchedResultsController != nil {
+        //            return _fetchedResultsController!
+        //        }
+        
+        let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
+        
+        // Set the batch size to a suitable number.
+        fetchRequest.fetchBatchSize = 20
+        
+        // Edit the sort key as appropriate.
+        let sortDescriptor = NSSortDescriptor(key: "dateTime", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        if MasterViewController.isFilteringOutNsfw {
+            let predicate = NSPredicate(format: "nsfw == %d", Bool(false))
+            fetchRequest.predicate = predicate
+        }
+        
+        //let context = container.viewContext
+        //context.undoManager = nil
+        let controller = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: container.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        controller.delegate = fetchedResultsControllerDelegate
+        //_fetchedResultsController = aFetchedResultsController
+        
+        do {
+            try controller.performFetch()
+        } catch {
+            // Replace this implementation with code to handle the error appropriately.
+            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+            let nserror = error as NSError
+            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+        }
+        return controller
+    }
 
 }
 

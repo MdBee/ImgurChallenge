@@ -12,41 +12,57 @@ import CoreData
 class CoreDataStack: NSObject {
     
     static let shared = CoreDataStack()
-    var container: NSPersistentContainer
-    
-    private override init() {
-        container = NSPersistentContainer(name: "ImgurChallenge")
-    }
-    
-    func loadStore(completionHandler: @escaping () -> ()) {
-        self.container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error as NSError? {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                
-                /*
-                 Typical reasons for an error here include:
-                 * The parent directory does not exist, cannot be created, or disallows writing.
-                 * The persistent store is not accessible, due to permissions or data protection when the device is locked.
-                 * The device is out of space.
-                 * The store could not be migrated to the current model version.
-                 Check the error message to determine what the actual problem was.
-                 */
-                fatalError("Unresolved error \(error), \(error.userInfo)")
+    //var container: NSPersistentContainer
+    lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "ImgurChallenge")
+        
+        container.loadPersistentStores { storeDesription, error in
+            guard error == nil else {
+                fatalError("Unresolved error \(error!)")
             }
-        })
+        }
         
         // Merge the changes from other contexts automatically.
-        self.container.viewContext.automaticallyMergesChangesFromParent = true
-        self.container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        self.container.viewContext.undoManager = nil
-        self.container.viewContext.shouldDeleteInaccessibleFaults = true
-    }
+        container.viewContext.automaticallyMergesChangesFromParent = true
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        container.viewContext.undoManager = nil
+        container.viewContext.shouldDeleteInaccessibleFaults = true
+        return container
+    }()
+    
+//    private override init() {
+//        container = NSPersistentContainer(name: "ImgurChallenge")
+//    }
+    
+//    func loadStore(completionHandler: @escaping () -> ()) {
+//        self.container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+//            if let error = error as NSError? {
+//                // Replace this implementation with code to handle the error appropriately.
+//                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+//
+//                /*
+//                 Typical reasons for an error here include:
+//                 * The parent directory does not exist, cannot be created, or disallows writing.
+//                 * The persistent store is not accessible, due to permissions or data protection when the device is locked.
+//                 * The device is out of space.
+//                 * The store could not be migrated to the current model version.
+//                 Check the error message to determine what the actual problem was.
+//                 */
+//                fatalError("Unresolved error \(error), \(error.userInfo)")
+//            }
+//        })
+//
+//        // Merge the changes from other contexts automatically.
+//        self.container.viewContext.automaticallyMergesChangesFromParent = true
+//        self.container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+//        self.container.viewContext.undoManager = nil
+//        self.container.viewContext.shouldDeleteInaccessibleFaults = true
+//    }
     
     // MARK: - Core Data Saving support
     
     func saveContext () {
-        let context = self.container.viewContext
+        let context = self.persistentContainer.viewContext
 
         if context.hasChanges {
             do {
@@ -66,7 +82,7 @@ class CoreDataStack: NSObject {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
         deleteRequest.resultType = .resultTypeObjectIDs
-        let context = self.container.viewContext
+        let context = self.persistentContainer.viewContext
 
         do {
             let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
