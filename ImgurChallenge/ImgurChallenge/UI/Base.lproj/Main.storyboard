@@ -174,7 +174,7 @@
                         </connections>
                     </tableView>
                     <toolbarItems>
-                        <barButtonItem title="nsfw is filtered out" id="yvq-TW-jrO">
+                        <barButtonItem title="nsfw is filtered out" largeContentSizeImage="NSFW Button" id="yvq-TW-jrO">
                             <color key="tintColor" red="1" green="0.57810515169999999" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <connections>
                                 <action selector="nsfwButtonTap:" destination="7bK-jq-Zjz" id="duO-lk-uiF"/>
@@ -214,6 +214,9 @@
             <point key="canvasLocation" x="-45" y="129"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="NSFW Button" width="16" height="16"/>
+    </resources>
     <inferredMetricsTieBreakers>
         <segue reference="6S0-TO-JiA"/>
     </inferredMetricsTieBreakers>
